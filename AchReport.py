@@ -8,6 +8,7 @@
 #                                                                     #
 #   v0.81 - Copy RegRipper Plugins to subdirectory if not there       #
 #   v0.82 - Check Dependencies: Regripper Plugins and LogParser       #
+#   v0.83 - Parse Recycle Bin entries using Eric Zimmerman's RBCmd    #
 ####################################################################### 
 
 import os
@@ -46,9 +47,9 @@ def main():
     ###########################################################################
     # Checking for RegRipper Plugins (They have to be in the working subdir)
     ###########################################################################
-    print "\nChecking Software Dependencies...\n"
+    print "Checking Software Dependencies...\n"
     if os.path.isfile(".\plugins\compname.pl"):
-        print "AChReport Regripper Plugin direcotory Found!\n"
+        print "AChReport Regripper Plugin directory Found!\n"
     else:
         print "Copying Regripper Plugins From AChoir Install..."
         returned_value = os.system("mkdir plugins")
@@ -120,7 +121,7 @@ def main():
     ###########################################################################
     # Fell Through, Now Process the files and extract data for report
     ###########################################################################
-    print "Now Building Additional Data from Sources...\n\n"
+    print "\nNow Building Additional Data from Sources...\n\n"
 
     print "Generating System Information from Registry...\n"
     cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p winnt_cv -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
@@ -133,7 +134,7 @@ def main():
     returned_value = os.system(cmdexec)
 
 
-    print "\n\nGenerating Prefetch Data...\n\n"
+    print "\nGenerating Prefetch Data...\n"
     cmdexec = "C:\AChoir\SYS\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
     returned_value = os.system(cmdexec)
 
@@ -162,6 +163,7 @@ def main():
     # Use Wevtutil to "export" the event log.  This has the effect of         #
     #  clearing any errors - It makes the Event Log more Stable.              #
     ###########################################################################
+    print "\nStabilizing Security Event Logs...\n"
     cmdexec = "Wevtutil.exe epl Security.evtx Security1.evtx /lf:True"
     returned_value = os.system(cmdexec)
 
@@ -169,6 +171,7 @@ def main():
     ###########################################################################
     # Parse the Events                                                        #
     ###########################################################################
+    print "Parsing Security Event Logs...\n"
     cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
     returned_value = os.system(cmdexec)
 
@@ -177,9 +180,17 @@ def main():
 
 
     ###########################################################################
+    # Parse the Recycle Bin                                                   #
+    ###########################################################################
+    print "Parsing Recycle Bin...\n"
+    cmdexec = "C:\\AChoir\\SYS\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
+    returned_value = os.system(cmdexec)
+
+
+    ###########################################################################
     # Parse the $MFT                                                          #
     ###########################################################################
-    print "\nParsing $MFT...\n\n"
+    print "Parsing $MFT...\n"
     cmdexec = "C:\\AChoir\\DSK\MFTDump.exe /l /d /v --output=MFTDump.csv " + dirname + "\\RawData\\$MFT" 
     returned_value = os.system(cmdexec)
 
@@ -230,18 +241,19 @@ def main():
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-    outfile.write("<tr><td width=8%> <a href=#Top>Top</a> </td>\n")
+    outfile.write("<tr><td width=6%> <a href=#Top>Top</a> </td>\n")
     outfile.write("<td width=8%> <a href=#Deleted>Deleted</a> </td>\n")
     outfile.write("<td width=8%> <a href=#Active>Active</a> </td>\n")
-    outfile.write("<td width=8%> <a href=#ExeTemp>Temp</a> </td>\n")
+    outfile.write("<td width=7%> <a href=#ExeTemp>Temp</a> </td>\n")
     outfile.write("<td width=9%> <a href=#Logins>FailLogin</a> </th>\n")
-    outfile.write("<td width=8%> <a href=#RDP>RDP</a> </th>\n")
+    outfile.write("<td width=6%> <a href=#RDP>RDP</a> </th>\n")
     outfile.write("<td width=8%> <a href=#Browser>Browser</a> </td>\n")
     outfile.write("<td width=8%> <a href=#Prefetch>Prefetch</a> </td>\n")
     outfile.write("<td width=9%> <a href=#UserAssist>UserAssist</a> </td>\n")
     outfile.write("<td width=8%> <a href=#IPConn>IP Conn.</a> </td>\n")
-    outfile.write("<td width=8%> <a href=#DNSCache> DNS </a> </td>\n")
-    outfile.write("<td width=10%> <a href=#AutoRun>AutoRun</a> </td></tr>\n")
+    outfile.write("<td width=6%> <a href=#DNSCache> DNS </a> </td>\n")
+    outfile.write("<td width=10%> <a href=#AutoRun>AutoRun</a> </td>\n")
+    outfile.write("<td width=7%> <a href=#RBin>RBin</a> </td></tr>\n")
     outfile.write("</table>\n")
 
     outfile.write("</Center></p>\n")
@@ -1307,6 +1319,58 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+
+    ###########################################################################
+    # Write Out Recycle Bin data ($I Files)                                   #
+    ###########################################################################
+    print "Generating Recycle Bin ($Recycle.Bin) Information...\n"
+    outfile.write("<a name=RBin></a>\n<hr>\n<H2>Recycle Bin ($Recycle.Bin) Information</H2>\n")
+
+    reccount = 0
+    filname = "RBin.dat"
+
+    if os.path.isfile(filname):
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed the Recycle Bin\n")
+        outfile.write("($Recycle.Bin $I entries). This information was parsed using Eric Zimmerman's\n")
+        outfile.write("RBCmd.exe utility.  This utility provides you with basic information about\n")
+        outfile.write("files that were found in the endpoint Recycle Bin (Deleted).  This can be perfectly\n")
+        outfile.write("normal activity, or can indicate that an actor deleted files to hide their activity.\n")
+        outfile.write("Please note: Some actors have been known to hide malware in the Recycle Bin.</font></i></p>\n")
+
+        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+
+        innfile = open(filname)
+        for innline in innfile:
+            if innline.startswith("Source file: "):
+                outfile.write("<tr><td style=\"text-align: left\">\n")
+                outfile.write("<b>" + innline.strip() + "</b><br>\n")
+                reccount = reccount + 1
+
+            elif innline.startswith("Version: "):
+                outfile.write(innline.strip() + "<br>\n")
+
+            elif innline.startswith("File size: "):
+                outfile.write(innline.strip() + "<br>\n")
+
+            elif innline.startswith("File name: "):
+                outfile.write(innline.strip() + "<br>\n")
+
+            elif innline.startswith("Deleted on:"):
+                outfile.write(innline.strip() + "</td></tr>\n")
+
+        outfile.write(innline.strip() + "</table>\n")
+        innfile.close()
+        os.remove(filname)
+
+        if reccount < 1:
+            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+        else:
+            outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
+    else:
+        outfile.write("<p><i><font color=firebrick>AChoir was not able to parse\n")
+        outfile.write("the endpoint Recycle Bin information.</font></i></p>\n")
+        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
 
     ###########################################################################
