@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: v0.81                                                      #
+# Version: v0.84                                                      #
 # Author.: David Porco                                                #
 # Release: 11/16/2018                                                 #
 #                                                                     #
@@ -9,6 +9,13 @@
 #   v0.81 - Copy RegRipper Plugins to subdirectory if not there       #
 #   v0.82 - Check Dependencies: Regripper Plugins and LogParser       #
 #   v0.83 - Parse Recycle Bin entries using Eric Zimmerman's RBCmd    #
+#   v0.84 - Add Color Using Windows ctypes (SetConsoleTextAttribute)  #
+#           Note: Console Color Routine taken from:                   #
+#           https://github.com/ActiveState/code/blob/master/recipes/  #
+#           Python/496901_Change_Windows_Console_Character_Attribute/ #
+#           recipe-496901.py                                          #
+#            Note: Licence for this code is included in file:         #
+#                  ActiveState-LICENSE                                #
 ####################################################################### 
 
 import os
@@ -17,6 +24,7 @@ import csv
 import requests
 import time 
 import argparse
+import ctypes
 
 parser = argparse.ArgumentParser(description="Format AChoir Output into a Report")
 parser.add_argument("-d", dest="dirname", 
@@ -32,25 +40,81 @@ dirleft, diright = os.path.split(dirname)
 htmname = diright + ".htm"
 
 
+###########################################################################
+# Color Console Variables
+###########################################################################
+STD_INPUT_HANDLE = -10
+STD_OUTPUT_HANDLE= -11
+STD_ERROR_HANDLE = -12
+
+FOREGROUND_BLUE   = 0x01 # text color contains blue.
+FOREGROUND_GREEN  = 0x02 # text color contains green.
+FOREGROUND_RED    = 0x04 # text color contains red.
+FOREGROUND_YELLOW = 0x06 # text color contains Yellow.
+FOREGROUND_WHITE  = 0x07 # text color contains white.
+FOREGROUND_INTENSITY = 0x08 # text color is intensified.
+BACKGROUND_BLUE  = 0x10 # background color contains blue.
+BACKGROUND_GREEN = 0x20 # background color contains green.
+BACKGROUND_RED   = 0x40 # background color contains red.
+BACKGROUND_INTENSITY = 0x80 # background color is intensified.
+
+std_out_handle = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+
+
+###########################################################################
+# Set Console String Output Color
+###########################################################################
+def set_color(color, handle=std_out_handle):
+    bool = ctypes.windll.kernel32.SetConsoleTextAttribute(handle, color)
+    return bool
+
+
+###########################################################################
+# Prefix message(Green). Warning(Yellow), and Error(Red) Color
+###########################################################################
+def set_messg(msg_type):
+    if msg_type == 'msg':
+      set_color(FOREGROUND_GREEN)
+      sys.stdout.write('[+] ')
+    elif msg_type == 'sub':
+      set_color(FOREGROUND_GREEN)
+      sys.stdout.write('    [+] ')
+    elif msg_type == 'err':
+      set_color(FOREGROUND_RED)
+      sys.stdout.write('[!] ')
+    elif msg_type == 'wrn':
+      set_color(FOREGROUND_YELLOW)
+      sys.stdout.write('[*] ')
+
+    set_color(FOREGROUND_WHITE)
+    return bool
+
+
 def main():
     if dirname != "None":
         if os.path.exists(dirname):
-            print "Valid AChoir Extraction Directory Found.\n\n"
+            set_messg('msg')
+            print "Valid AChoir Extraction Directory Found.\n"
         else:
-            print "No Valid AChoir Extraction Directory Found.\n\n"
+            set_messg('err')
+            print "No Valid AChoir Extraction Directory Found.\n"
             sys.exit(1)
     else:
-        print "No Valid AChoir Extraction Directory Found.\n\n"
+        set_messg('err')
+        print "No Valid AChoir Extraction Directory Found.\n"
         sys.exit(1)
 
 
     ###########################################################################
     # Checking for RegRipper Plugins (They have to be in the working subdir)
     ###########################################################################
-    print "Checking Software Dependencies...\n"
+    set_messg('msg')
+    print "Checking Software Dependencies..."
     if os.path.isfile(".\plugins\compname.pl"):
-        print "AChReport Regripper Plugin directory Found!\n"
+        set_messg('msg')
+        print "AChReport Regripper Plugin directory Found!"
     else:
+        set_messg('wrn')
         print "Copying Regripper Plugins From AChoir Install..."
         returned_value = os.system("mkdir plugins")
         cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\compname.pl .\\plugins\compname.pl"
@@ -66,79 +130,104 @@ def main():
 
     GotDepend = 1
     if os.path.isfile(".\plugins\compname.pl"):
+        set_messg('msg')
         print "Regripper Plugin Found: compname.pl"
     else:
+        set_messg('err')
         print "Regripper Plugin NOT Found: compname.pl"
         GotDepend = 0
 
     if os.path.isfile(".\plugins\shellfolders.pl"):
+        set_messg('msg')
         print "Regripper Plugin Found: shellfolders.pl"
     else:
+        set_messg('err')
         print "Regripper Plugin NOT Found: shellfolders.pl"
         GotDepend = 0
 
     if os.path.isfile(".\plugins\userassist.pl"):
+        set_messg('msg')
         print "Regripper Plugin Found: userassist.pl"
     else:
+        set_messg('err')
         print "Regripper Plugin NOT Found: userassist.pl"
         GotDepend = 0
 
     if os.path.isfile(".\plugins\winnt_cv.pl"):
+        set_messg('msg')
         print "Regripper Plugin Found: winnt_cv.pl"
     else:
+        set_messg('err')
         print "Regripper Plugin NOT Found: winnt_cv.pl"
         GotDepend = 0
 
     if os.path.isfile(".\plugins\winver.pl"):
+        set_messg('msg')
         print "Regripper Plugin Found: winver.pl"
     else:
+        set_messg('err')
         print "Regripper Plugin NOT Found: winver.pl"
         GotDepend = 0
 
     if os.path.isfile("logparser.exe"):
+        set_messg('msg')
         print "LogParser Found: logparser.exe"
     else:
+        set_messg('err')
         print "LogParser NOT Found: logparser.exe"
         GotDepend = 0
 
     if os.path.isfile("logparser.dll"):
+        set_messg('msg')
         print "LogParser Found: logparser.dll"
     else:
+        set_messg('err')
         print "LogParser NOT Found: logparser.dll"
         GotDepend = 0
 
     if os.path.isfile("logparser.chm"):
+        set_messg('msg')
         print "LogParser Found: logparser.chm"
     else:
+        set_messg('err')
         print "LogParser NOT Found: logparser.chm"
         GotDepend = 0
 
     if GotDepend == 0:
-        print "\nALL Dependencies Not Met - Now Exiting.\n"
+        set_messg('err')
+        print "ALL Dependencies Not Met - Now Exiting.\n"
         quit()
 
 
     ###########################################################################
     # Fell Through, Now Process the files and extract data for report
     ###########################################################################
-    print "\nNow Building Additional Data from Sources...\n\n"
+    set_messg('msg')
+    print "Now Building Additional Data from Sources..."
 
-    print "Generating System Information from Registry...\n"
+    set_messg('msg')
+    print "Generating System Information from Registry..."
+
+    set_messg('sub')
     cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p winnt_cv -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
     returned_value = os.system(cmdexec)
 
+    set_messg('sub')
     cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
+    set_messg('sub')
     cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
 
-    print "\nGenerating Prefetch Data...\n"
+    set_messg('msg')
+    print "Generating Prefetch Data..."
     cmdexec = "C:\AChoir\SYS\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
     returned_value = os.system(cmdexec)
 
-    print "Generating User Assist for Multiple User Profiles...\n"
+    set_messg('msg')
+    print "Generating User Assist for Multiple User Profiles..."
     reccount = 0
 
     curdir = dirname + "\\reg"
@@ -148,14 +237,17 @@ def main():
 
             curouput = "shlasst." + str(reccount)
             cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curinput + " > " + curouput
+            set_messg('sub')
             returned_value = os.system(cmdexec)
 
             cmdexec = "C:\\AChoir\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curinput + " >> " + curouput
+            set_messg('sub')
             returned_value = os.system(cmdexec)
 
             reccount = reccount + 1
 
-    print "\nGenerating RDP Success and Failure...\n"
+    set_messg('msg')
+    print "Generating RDP Success and Failure..."
     cmdexec = "copy " + dirname + "\\evt\\sys32\\Security.evtx"
     returned_value = os.system(cmdexec)
 
@@ -163,7 +255,8 @@ def main():
     # Use Wevtutil to "export" the event log.  This has the effect of         #
     #  clearing any errors - It makes the Event Log more Stable.              #
     ###########################################################################
-    print "\nStabilizing Security Event Logs...\n"
+    set_messg('msg')
+    print "Stabilizing Security Event Logs..."
     cmdexec = "Wevtutil.exe epl Security.evtx Security1.evtx /lf:True"
     returned_value = os.system(cmdexec)
 
@@ -171,7 +264,8 @@ def main():
     ###########################################################################
     # Parse the Events                                                        #
     ###########################################################################
-    print "Parsing Security Event Logs...\n"
+    set_messg('msg')
+    print "Parsing Security Event Logs..."
     cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
     returned_value = os.system(cmdexec)
 
@@ -182,7 +276,8 @@ def main():
     ###########################################################################
     # Parse the Recycle Bin                                                   #
     ###########################################################################
-    print "Parsing Recycle Bin...\n"
+    set_messg('msg')
+    print "Parsing Recycle Bin..."
     cmdexec = "C:\\AChoir\\SYS\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
     returned_value = os.system(cmdexec)
 
@@ -190,7 +285,8 @@ def main():
     ###########################################################################
     # Parse the $MFT                                                          #
     ###########################################################################
-    print "Parsing $MFT...\n"
+    set_messg('msg')
+    print "Parsing $MFT..."
     cmdexec = "C:\\AChoir\\DSK\MFTDump.exe /l /d /v --output=MFTDump.csv " + dirname + "\\RawData\\$MFT" 
     returned_value = os.system(cmdexec)
 
@@ -205,9 +301,12 @@ def main():
     ###########################################################################
     # Fell Through, Now Process the files and extract data for report         #
     ###########################################################################
-    print "\n\nNow Processing AChoir Extraction: " + dirname + "\n"
-    print "Writing Report: " + htmname + "\n\n"
-    print "Generating HTML/CSS...\n"
+    set_messg('msg')
+    print "Now Processing AChoir Extraction: " + dirname
+    set_messg('msg')
+    print "Writing Report: " + htmname
+    set_messg('msg')
+    print "Generating HTML/CSS..."
 
     outfile = open(htmname, "w")
     #outfile = open("AChReport.htm", "w")
@@ -259,7 +358,8 @@ def main():
     outfile.write("</Center></p>\n")
 
     # Write Basic Data
-    print "Generating Basic Endpoint Information...\n"
+    set_messg('msg')
+    print "Generating Basic Endpoint Information..."
     outfile.write("<H2>Basic Endpoint Information</H2>\n")
 
     filname = dirname + "\\info.dat"
@@ -344,11 +444,11 @@ def main():
     os.remove("SysInfo.dat")
 
 
-
     ###########################################################################
     # Write Logon Data                                                        #
     ###########################################################################
-    print "Generating Logon Information...\n"
+    set_messg('msg')
+    print "Generating Logon Information..."
     outfile.write("<hr><H2>Logon Information</H2>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about what Users are \n")
@@ -371,7 +471,8 @@ def main():
     ###########################################################################
     # Small Deleted Files ($MFT) - (Use Python CSV Reader Module)             #
     ###########################################################################
-    print "Generating Deleted Files $MFT Information...\n"
+    set_messg('msg')
+    print "Generating Deleted Files $MFT Information..."
     filname = "MFTDump.csv"
 
     if os.path.isfile(filname):
@@ -523,7 +624,8 @@ def main():
     ###########################################################################
     # Large Active Files ($MFT) - (Use Python CSV Reader Module)              #
     ###########################################################################
-    print "Generating Active Files $MFT Information...\n"
+    set_messg('msg')
+    print "Generating Active Files $MFT Information..."
     filname = "MFTDump.csv"
 
     if os.path.isfile(filname):
@@ -576,7 +678,8 @@ def main():
     ###########################################################################
     # Active Exe Files in Temp Directories - (Use Python CSV Reader Module)   #
     ###########################################################################
-    print "Generating Active Files in Temp Directories...\n"
+    set_messg('msg')
+    print "Generating Active Files in Temp Directories..."
     filname = "MFTDump.csv"
 
     if os.path.isfile(filname):
@@ -631,7 +734,8 @@ def main():
     ###########################################################################
     # Deleted Exe Files in Temp Directories - (Use Python CSV Reader Module)  #
     ###########################################################################
-    print "Generating Deleted Files in Temp Directories...\n"
+    set_messg('msg')
+    print "Generating Deleted Files in Temp Directories..."
     filname = "MFTDump.csv"
 
     if os.path.isfile(filname):
@@ -693,7 +797,8 @@ def main():
     ###########################################################################
     # Write Success RDP Logins (Use Python CSV Reader Module)                 #
     ###########################################################################
-    print "Generating Sucessful RDP Login Information...\n"
+    set_messg('msg')
+    print "Generating Sucessful RDP Login Information..."
     outfile.write("<a name=RDP></a>\n<hr>\n<H2>Successful RDP Logins</H2>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
@@ -739,7 +844,8 @@ def main():
     ###########################################################################
     # Write Failed Logins (Use Python CSV Reader Module)                      #
     ###########################################################################
-    print "Generating Failed Logins Information...\n"
+    set_messg('msg')
+    print "Generating Failed Logins Information..."
     outfile.write("<a name=Logins></a>\n<hr>\n<H2>Failed Logins</H2>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
@@ -803,7 +909,8 @@ def main():
     ###########################################################################
     # Write File Browser Data/Archive types  (Use Python CSV Reader Module)   #
     ###########################################################################
-    print "Generating File History access to Archive Files...\n"
+    set_messg('msg')
+    print "Generating File History access to Archive Files..."
     outfile.write("<a name=Browser></a>\n<hr>\n<H2>File Browse (Archive files) History Information</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Accessed Files that have an Archive File Type (i.e. .Arc, .Rar, .Zip, .Tar, .7z, .Cab)\n")
@@ -850,7 +957,8 @@ def main():
     ###########################################################################
     # Write Web Browser Data (Use Python CSV Reader Module)                   #
     ###########################################################################
-    print "Generating File and Web Browser Information...\n"
+    set_messg('msg')
+    print "Generating File and Web Browser Information..."
     outfile.write("<hr>\n<H2>File Browse History Information</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("accessed files. These files were accessed on the machine and may indicate hostile\n")
@@ -934,7 +1042,8 @@ def main():
     ###########################################################################
     # Write Prefetch Data (Use Python CSV Reader Module)                      #
     ###########################################################################
-    print "Generating Prefetch Information...\n"
+    set_messg('msg')
+    print "Generating Prefetch Information..."
     outfile.write("<a name=Prefetch></a>\n<hr>\n<H2>Prefetch History Information</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Prefetch files. Prefetch files are generated by Windows to make loading previously \n")
@@ -982,7 +1091,8 @@ def main():
     ###########################################################################
     # Write Connection Data (Use Python CSV Reader Module)                    #
     ###########################################################################
-    print "Generating IP Connections Information...\n"
+    set_messg('msg')
+    print "Generating IP Connections Information..."
     outfile.write("<a name=IPConn></a>\n<hr>\n<H2>IP Connections Information</H2>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
@@ -1038,7 +1148,8 @@ def main():
     ###########################################################################
     # Write User Assist Data (Use Python CSV Reader Module)                   #
     ###########################################################################
-    print "Generating User Assist Information...\n"
+    set_messg('msg')
+    print "Generating User Assist Information..."
     outfile.write("<a name=UserAssist></a>\n<hr>\n<H2>HKCU User Assist Information</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("the Windows UserAssist Registry Keys (Both System and User Hives). UserAssist keys \n")
@@ -1125,7 +1236,8 @@ def main():
     ###########################################################################
     # Write AutoRunsc Data (Run and RunOnce) (Use Python CSV Reader Module)   #
     ###########################################################################
-    print "Generating AutoRuns Information...\n"
+    set_messg('msg')
+    print "Generating AutoRuns Information..."
 
     outfile.write("<a name=AutoRun></a>\n<hr>\n<H2>AutoRun Information (Run And RunOnce)</H2>\n")
 
@@ -1234,6 +1346,9 @@ def main():
     ###########################################################################
     # Write DNS Cache Data = Flat File.                                       #
     ###########################################################################
+    set_messg('msg')
+    print "DNS Cache Information..."
+
     outfile.write("<a name=DNSCache></a>\n<hr>\n<H2>DNS Cache (IPConfig /displaydns)</H2>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
@@ -1323,7 +1438,8 @@ def main():
     ###########################################################################
     # Write Out Recycle Bin data ($I Files)                                   #
     ###########################################################################
-    print "Generating Recycle Bin ($Recycle.Bin) Information...\n"
+    set_messg('msg')
+    print "Generating Recycle Bin ($Recycle.Bin) Information..."
     outfile.write("<a name=RBin></a>\n<hr>\n<H2>Recycle Bin ($Recycle.Bin) Information</H2>\n")
 
     reccount = 0
@@ -1380,6 +1496,7 @@ def main():
     outfile.write("</body></html>\n")
     outfile.close() 
 
+    set_messg('msg')
     print "AChoir Report Processing Complete!\n"
 
 
