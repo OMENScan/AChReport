@@ -16,6 +16,9 @@
 #           recipe-496901.py                                          #
 #            Note: Licence for this code is included in file:         #
 #                  ActiveState-LICENSE                                #
+#   v0.85 - Recognize Root Dir of AChoir.  Replace Static Calls to    #
+#           The C:\AChoir Directory, with the parsed Root Dir.  This  #
+#           allows AChReport to Run from AChoir on other Drives       #
 ####################################################################### 
 
 import os
@@ -38,7 +41,6 @@ args = parser.parse_args()
 dirname = str(args.dirname)
 dirleft, diright = os.path.split(dirname)
 htmname = diright + ".htm"
-
 
 ###########################################################################
 # Color Console Variables
@@ -105,6 +107,10 @@ def main():
         sys.exit(1)
 
 
+    set_messg('msg')
+    print "Root AChoir Dir: " + dirleft
+
+
     ###########################################################################
     # Checking for RegRipper Plugins (They have to be in the working subdir)
     ###########################################################################
@@ -117,15 +123,15 @@ def main():
         set_messg('wrn')
         print "Copying Regripper Plugins From AChoir Install..."
         returned_value = os.system("mkdir plugins")
-        cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\compname.pl .\\plugins\compname.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\compname.pl .\\plugins\compname.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\shellfolders.pl .\\plugins\shellfolders.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\shellfolders.pl .\\plugins\shellfolders.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\userassist.pl .\\plugins\userassist.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\userassist.pl .\\plugins\userassist.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\winnt_cv.pl .\\plugins\winnt_cv.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\winnt_cv.pl .\\plugins\winnt_cv.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy C:\\AChoir\RRV\\RegRipper2.8-master\\plugins\\winver.pl .\\plugins\winver.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\winver.pl .\\plugins\winver.pl"
         returned_value = os.system(cmdexec)
 
     GotDepend = 1
@@ -209,21 +215,21 @@ def main():
     print "Generating System Information from Registry..."
 
     set_messg('sub')
-    cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p winnt_cv -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p winnt_cv -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
     returned_value = os.system(cmdexec)
 
     set_messg('sub')
-    cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
     set_messg('sub')
-    cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
 
     set_messg('msg')
     print "Generating Prefetch Data..."
-    cmdexec = "C:\AChoir\SYS\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
+    cmdexec = dirleft + "\\SYS\\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
     returned_value = os.system(cmdexec)
 
     set_messg('msg')
@@ -236,11 +242,11 @@ def main():
             curinput = curdir + "\\" + curfile
 
             curouput = "shlasst." + str(reccount)
-            cmdexec = "C:\\AChoir\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curinput + " > " + curouput
+            cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curinput + " > " + curouput
             set_messg('sub')
             returned_value = os.system(cmdexec)
 
-            cmdexec = "C:\\AChoir\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curinput + " >> " + curouput
+            cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curinput + " >> " + curouput
             set_messg('sub')
             returned_value = os.system(cmdexec)
 
@@ -278,7 +284,7 @@ def main():
     ###########################################################################
     set_messg('msg')
     print "Parsing Recycle Bin..."
-    cmdexec = "C:\\AChoir\\SYS\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
+    cmdexec = dirleft + "\\SYS\\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
     returned_value = os.system(cmdexec)
 
 
@@ -287,7 +293,7 @@ def main():
     ###########################################################################
     set_messg('msg')
     print "Parsing $MFT..."
-    cmdexec = "C:\\AChoir\\DSK\MFTDump.exe /l /d /v --output=MFTDump.csv " + dirname + "\\RawData\\$MFT" 
+    cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + dirname + "\\RawData\\$MFT" 
     returned_value = os.system(cmdexec)
 
 
