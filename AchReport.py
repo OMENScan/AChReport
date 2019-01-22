@@ -19,6 +19,8 @@
 #   v0.85 - Recognize Root Dir of AChoir.  Replace Static Calls to    #
 #           The C:\AChoir Directory, with the parsed Root Dir.  This  #
 #           allows AChReport to Run from AChoir on other Drives       #
+#   v0.86 - AChoir 2.8 now supports pathing - Modify AChReport to     #
+#           Gather data from dirs and subdirs using os.walk           #
 ####################################################################### 
 
 import os
@@ -234,23 +236,25 @@ def main():
 
     set_messg('msg')
     print "Generating User Assist for Multiple User Profiles..."
+
     reccount = 0
 
     curdir = dirname + "\\reg"
-    for curfile in os.listdir(curdir):
-        if curfile.startswith("NTUSER."):
-            curinput = curdir + "\\" + curfile
 
-            curouput = "shlasst." + str(reccount)
-            cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curinput + " > " + curouput
-            set_messg('sub')
-            returned_value = os.system(cmdexec)
+    for root, dirs, files in os.walk(curdir):
+        for fname in files:
+            curfile = os.path.join(root, fname)
+            if fname.startswith("NTUSER."):
+                curouput = "shlasst." + str(reccount)
+                cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curfile + " > " + curouput
+                set_messg('sub')
+                returned_value = os.system(cmdexec)
 
-            cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curinput + " >> " + curouput
-            set_messg('sub')
-            returned_value = os.system(cmdexec)
+                cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curfile + " >> " + curouput
+                set_messg('sub')
+                returned_value = os.system(cmdexec)
 
-            reccount = reccount + 1
+                reccount = reccount + 1
 
     set_messg('msg')
     print "Generating RDP Success and Failure..."
