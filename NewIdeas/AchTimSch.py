@@ -83,7 +83,7 @@ def main():
 
             print ("[+] Found Achoir Telemetry Directory: " + dname)
             if os.path.isfile(csvname):
-                print("[+] AChreport: " + csvname + " Already Processed, Bypassing...")
+                print("[+] AChreport: " + csvname + " Already Processed, Bypassing...\n\n")
                 continue
 
 
@@ -152,7 +152,7 @@ def main():
                 for fname in fnmatch.filter(files, '$MFT*'):
                     curfile = os.path.join(root, fname)
 
-                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " " + curfile
+                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " \"" + curfile + "\""
                     returned_value = os.system(cmdexec)
 
                     reccount = reccount + 1
@@ -172,7 +172,7 @@ def main():
                 for fname in fnmatch.filter(files, '*.evtx'):
                     curfile = os.path.join(root, fname)
 
-                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " " + curfile
+                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " \"" + curfile + "\""
                     returned_value = os.system(cmdexec)
 
                     reccount = reccount + 1
@@ -192,7 +192,7 @@ def main():
                 for fname in files:
                     curfile = os.path.join(root, fname)
 
-                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " " + curfile
+                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " \"" + curfile + "\""
                     returned_value = os.system(cmdexec)
 
                     reccount = reccount + 1
@@ -212,7 +212,7 @@ def main():
                 for fname in files:
                     curfile = os.path.join(root, fname)
 
-                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " " + curfile
+                    cmdexec = achname + "\\Plaso\\Log2TimeLine.exe -z \"UTC\" --parsers \"win7_slow\" --status_view \"none\" --quiet --logfile " + dstname + "\\Temp.Log" + " " + bdyname + " \"" + curfile + "\""
                     returned_value = os.system(cmdexec)
 
                     reccount = reccount + 1
