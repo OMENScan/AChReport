@@ -162,29 +162,70 @@ def main():
         quit()
 
 
+
     ###########################################################################
     # Checking Input Directory for Telemetry to Process
     ###########################################################################
     for roox, dirx, filex in os.walk(srcname):
         for dname in dirx:
             srcfull = srcname + "\\" + dname
-            mftname = srcfull + "\\RawData\\$MFT"
-            arnname = srcfull + "\\Arn\\AutoRun.dat"
-            regname = srcfull + "\\Reg\\SOFTWARE"
-
             htmname = dstname + "\\" + dname + ".htm"
+
             print ("[+] Found Achoir Telemetry Directory: " + dname)
             if os.path.isfile(htmname):
-                print("[+] AChreport: " + htmname + " Already Processed, Bypassing...")
+                print("[+] AChreport: " + htmname + " Already Processed, Bypassing...\n\n")
                 continue
-            if not os.path.isfile(arnname):
-                print("[+] AChreport: " + arnname + " Sanity Check Failed - Missing Autoruns File...")
+
+
+            ###########################################################################
+            # Checking to see if the Collection is growing (Still in progress)
+            ###########################################################################
+            print("[+] Sanity Checks in Progress...")
+            oldcount = 0
+            newcount = 0
+            evtflag = 0
+            regflag = 0
+            arnflag = 0
+            mftflag = 0
+
+            for root, dirs, files in os.walk(srcfull):
+                for fname in files:
+                    fnamelc = fname.lower()
+
+                    if fnamelc == "application.evtx":
+                        evtflag = evtflag + 1
+                    if fnamelc == "software":
+                        regflag = regflag + 1
+                    if fnamelc == "autorun.dat":
+                        arnflag = arnflag + 1
+                    if fnamelc == "$mft":
+                        mftflag = mftflag + 1
+
+                    oldcount = oldcount + 1
+
+            time.sleep(60)
+
+            for root, dirs, files in os.walk(srcfull):
+                for fname in files:
+                    newcount = newcount + 1
+  
+            if newcount == oldcount:
+                print("    [+] Collection is stable at: " + str(newcount) + " Files")
+            else:
+                print("    [+] Collection is still growing...  Bypassing...\n\n")
                 continue
-            if not os.path.isfile(regname):
-                print("[+] AChreport: " + regname + " Sanity Check Failed - Missing Registry File...")
+
+            if arnflag == 0:
+                print("[+] Sanity Check Failed - Missing Autoruns File...")
                 continue
-            if not os.path.isfile(mftname):
-                print("[+] AChreport: " + mftname + " Sanity Check Failed - Missing Registry File...")
+            if regflag == 0:
+                print("[+] Sanity Check Failed - Missing Registry File...")
+                continue
+            if mftflag == 0:
+                print("[+] Sanity Check Failed - Missing $MFT File...")
+                continue
+            if evtflag == 0:
+                print("[+] Sanity Check Failed - Missing Event Log File...")
                 continue
 
 
@@ -1564,6 +1605,9 @@ def main():
 
             print("[+] Processing Completed for: " + dname + "\n\n")
 
+        ###########################################################################
+        # del dirx[:] - This is to prevent recursion - we just want one Dir Level #
+        ###########################################################################
         del dirx[:] # or a break here. does the same thing.
 
 
