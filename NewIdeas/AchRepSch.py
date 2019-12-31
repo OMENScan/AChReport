@@ -181,28 +181,34 @@ def main():
             # Checking to see if the Collection is growing (Still in progress)
             ###########################################################################
             print("[+] Sanity Checks in Progress...")
+            ListOfFiles = ['application.evtx', 'security.evtx', 'system.evtx',
+                           'software', 'security', 'system',
+                           'autorun.dat', '$mft', 'cports.csv', 'userassist.csv',
+                           'info.dat', 'logon.dat', 'ipcfgdns.dat']
             oldcount = 0
             newcount = 0
-            evtflag = 0
-            regflag = 0
-            arnflag = 0
-            mftflag = 0
+            filflag = 0
 
             for root, dirs, files in os.walk(srcfull):
                 for fname in files:
                     fnamelc = fname.lower()
 
-                    if fnamelc == "application.evtx":
-                        evtflag = evtflag + 1
-                    if fnamelc == "software":
-                        regflag = regflag + 1
-                    if fnamelc == "autorun.dat":
-                        arnflag = arnflag + 1
-                    if fnamelc == "$mft":
-                        mftflag = mftflag + 1
+                    if fnamelc in ListOfFiles:
+                        filflag = filflag + 1
 
                     oldcount = oldcount + 1
 
+            ###########################################################################
+            # did we get at least 12 of the necessary files?
+            ###########################################################################
+            if filflag < 13:
+                print("[+] Sanity Check Failed - Missing One Or More Necessary Files (" + str(filflag) + " / 13)...\n\n")
+                continue
+
+
+            ###########################################################################
+            # Wait 60 Seconds and check again to see if Collection is still growing
+            ###########################################################################
             time.sleep(60)
 
             for root, dirs, files in os.walk(srcfull):
@@ -213,19 +219,6 @@ def main():
                 print("    [+] Collection is stable at: " + str(newcount) + " Files")
             else:
                 print("    [+] Collection is still growing...  Bypassing...\n\n")
-                continue
-
-            if arnflag == 0:
-                print("[+] Sanity Check Failed - Missing Autoruns File...")
-                continue
-            if regflag == 0:
-                print("[+] Sanity Check Failed - Missing Registry File...")
-                continue
-            if mftflag == 0:
-                print("[+] Sanity Check Failed - Missing $MFT File...")
-                continue
-            if evtflag == 0:
-                print("[+] Sanity Check Failed - Missing Event Log File...")
                 continue
 
 
