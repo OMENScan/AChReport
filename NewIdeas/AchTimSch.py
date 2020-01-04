@@ -97,6 +97,8 @@ def main():
                            'info.dat', 'logon.dat', 'ipcfgdns.dat']
             oldcount = 0
             newcount = 0
+            oldsizeb = 0
+            newsizeb = 0
             filflag = 0
 
             for root, dirs, files in os.walk(srcfull):
@@ -106,6 +108,7 @@ def main():
                     if fnamelc in ListOfFiles:
                         filflag = filflag + 1
 
+                    oldsizeb = oldsizeb + os.path.getsize(os.path.join(root, fname))
                     oldcount = oldcount + 1
 
             ###########################################################################
@@ -119,8 +122,15 @@ def main():
 
             for root, dirs, files in os.walk(srcfull):
                 for fname in files:
+                    newsizeb = newsizeb + os.path.getsize(os.path.join(root, fname))
                     newcount = newcount + 1
   
+            if newsizeb == oldsizeb:
+                print("    [+] Collection is stable at: " + str(newsizeb) + " Bytes")
+            else:
+                print("    [+] Collection is still growing...  Bypassing...\n\n")
+                continue
+
             if newcount == oldcount:
                 print("    [+] Collection is stable at: " + str(newcount) + " Files")
             else:
