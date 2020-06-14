@@ -30,6 +30,8 @@
 #              - Wait for completion semaphore                        #
 #           2. Check if report was already generated                  #
 #           3. Generate report if not already there                   #
+#   v0.91 - Fixed Various Unicode errors fornon-ascii chars.          #
+#            - Credit goes to Dean Woods for these fixes              #
 ####################################################################### 
 import msvcrt
 import os
@@ -341,8 +343,8 @@ def main():
             print("[+] Writing Report: " + htmname)
             print("[+] Generating HTML/CSS...")
 
-            outfile = open(htmname, "w")
-            #outfile = open("AChReport.htm", "w")
+            outfile = open(htmname, "w", encoding='utf8', errors="replace")
+            #outfile = open("AChReport.htm", "w", encoding='utf8', errors="replace")
             ###########################################################################
             # Write HTML Headers & CSS                                                #
             # RESPONSTABLE 2.0 by jordyvanraaij                                       #
@@ -406,7 +408,7 @@ def main():
                 outfile.write("endpoint has been running (thus when it may have last last been rebooted\n")
                 outfile.write("and/or patched).</font></i></p>\n")
 
-                innfile = open(filname)
+                innfile = open(filname, encoding='utf8', errors="replace")
                 for innline in innfile:
                     if innline.startswith("System information "):
                         outfile.write("<b>" + innline.strip() + "</b><br>\n")
@@ -445,7 +447,7 @@ def main():
                 outfile.write("the endpoint. This information was extracted from the SYSTEM and SOFTWARE Registry Hives\n")
                 outfile.write("using RegRipper.</font></i></p>\n")
 
-                innfile = open(dedname)
+                innfile = open(dedname, encoding='utf8', errors="replace")
                 for innline in innfile:
                     if innline.startswith("ComputerName "):
                         outfile.write("<b>" + innline.strip() + "</b><br>\n")
@@ -491,7 +493,7 @@ def main():
             filname = srcfull + "\\sys\\Logon.dat"
 
             if os.path.isfile(filname):
-                innfile = open(filname)
+                innfile = open(filname, encoding='utf8', errors="replace")
 
                 for innline in innfile:
                     outfile.write(innline.strip() + "<br>\n")
@@ -524,7 +526,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -541,7 +543,7 @@ def main():
                                         outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
                                         reccount = reccount + 1
                 outfile.write("</table>\n")
-                csvfile.close()
+                # csvfile.close()
 
                 if reccount < 1:
                     outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -574,7 +576,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -591,7 +593,7 @@ def main():
                                         outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
                                         reccount = reccount + 1
                 outfile.write("</table>\n")
-                csvfile.close()
+                # csvfile.close()
 
                 if reccount < 1:
                     outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -624,7 +626,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -641,7 +643,7 @@ def main():
                                         outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
                                         reccount = reccount + 1
                 outfile.write("</table>\n")
-                csvfile.close()
+                # csvfile.close()
 
                 if reccount < 2:
                     outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -677,7 +679,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -694,7 +696,7 @@ def main():
                                         outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
                                         reccount = reccount + 1
                 outfile.write("</table>\n")
-                csvfile.close()
+                # csvfile.close()
 
                 if reccount < 1:
                     outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -730,7 +732,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -785,7 +787,7 @@ def main():
                 outfile.write("<th width=15%> Modified </th>\n")
                 outfile.write("<th width=15%> Size </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='\t')
                     for csvrow in csvread:
                         if len(csvrow) > 13:
@@ -840,7 +842,7 @@ def main():
 
             if os.path.isfile(filname):
                 outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 4:
@@ -893,7 +895,7 @@ def main():
                 outfile.write("<tr><th width=75%> Attempted UserId </th>\n")
                 outfile.write("<th width=25%> Count </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         ldedupKey = csvrow[1].lower()
@@ -949,7 +951,7 @@ def main():
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
             if os.path.isfile(filname):
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 7:
@@ -997,7 +999,7 @@ def main():
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
             if os.path.isfile(filname):
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 7:
@@ -1035,7 +1037,7 @@ def main():
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
             if os.path.isfile(filname):
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 7:
@@ -1089,7 +1091,7 @@ def main():
                 outfile.write("<th width=5%> Times </th>\n")
                 outfile.write("<th width=30%> Path </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 7:
@@ -1142,7 +1144,7 @@ def main():
                 outfile.write("<th width=7%> State </th>\n")
                 outfile.write("<th width=30%> Process Path </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 11:
@@ -1190,7 +1192,7 @@ def main():
                 outfile.write("<th width=5%> Modified Count </th>\n")
                 outfile.write("<th width=30%> Item Name </th></tr>\n")
 
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 3:
@@ -1222,7 +1224,7 @@ def main():
                     filcount = filcount + 1
                     outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
-                    innfile = open(curfile)
+                    innfile = open(curfile, encoding='utf8', errors="replace")
                     for innline in innfile:
                         if innline.startswith("Desktop "):
                             outfile.write("<tr><th width=100%>" + innline.strip()  + "</th></tr>\n")
@@ -1231,7 +1233,7 @@ def main():
                     outfile.write("<tr><td style=\"text-align: left\">\n")
 
                     reccount = 0 
-                    innfile = open(curfile)
+                    innfile = open(curfile, encoding='utf8', errors="replace")
                     for innline in innfile:
                         if innline.startswith("shellfolders "):
                             outfile.write("<h2>" + innline.strip()  + "</h2><br>\n")
@@ -1282,7 +1284,7 @@ def main():
             filname = srcfull + "\\arn\\AutoRun.dat"
 
             if os.path.isfile(filname):
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 10:
@@ -1329,7 +1331,7 @@ def main():
             filname = srcfull + "\\arn\\AutoRun.dat"
 
             if os.path.isfile(filname):
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 10:
@@ -1381,7 +1383,7 @@ def main():
 
             if os.path.isfile(filname):
                 outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 3:
@@ -1429,7 +1431,7 @@ def main():
 
             if os.path.isfile(filname):
                 outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-                with open(filname, 'r') as csvfile:
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
                         if len(csvrow) > 3:
@@ -1483,7 +1485,7 @@ def main():
                 outfile.write("<th width=25%> Resolution </th>\n")
                 outfile.write("<th width=25%> Record Type </th></tr>\n")
 
-                innfile = open(filname)
+                innfile = open(filname, encoding='utf8', errors="replace")
                 for innline in innfile:
                     if innline.startswith("    ------"):
                         DNSRecName = LastRec
@@ -1565,7 +1567,7 @@ def main():
 
                 outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
-                innfile = open(filname)
+                innfile = open(filname, encoding='utf8', errors="replace")
                 for innline in innfile:
                     if innline.startswith("Source file: "):
                         outfile.write("<tr><td style=\"text-align: left\">\n")
