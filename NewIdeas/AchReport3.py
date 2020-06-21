@@ -770,6 +770,9 @@ def main():
                     outfile.write("<" + tdtr + " width=10%>" + csvrow[4] + "</" + tdtr + ">\n")
                     outfile.write("<" + tdtr + " width=20%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
 
+                    # Write out IP Address for Bulk Lookup 
+                    ipsfileall.write(csvrow[5] + "\n")
+
                     reccount = reccount + 1
         outfile.write("</table>\n")
         os.remove(filname)
@@ -1533,11 +1536,13 @@ def main():
 
     outfile.write("<a name=BulkIPs></a>\n<hr>\n<H2>Bulk IP Address Data</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
-    outfile.write("information about IP Addresses it Identified. These can be bulk checked using your favorite \n")
+    outfile.write("information about IP Addresses it Identified. These were found in Active Connections, \n")
+    outfile.write("Resolved DNS Queries, and RDP Logins. These can be bulk checked using your favorite \n")
     outfile.write("Threat Intel tools to determine if any of the IP addresses on this machine are \n")
     outfile.write("known to be malicious. </font></i></p>\n")
 
     reccount = 0
+    recdupl = 0
     ipsset = set()
     with open(ipsnameall) as ipsfileall:
         for ipsline in ipsfileall:
@@ -1545,11 +1550,14 @@ def main():
                 outfile.write(ipsline + "<br>")
                 ipsset.add(ipsline)
                 reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
 
     if reccount < 1:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
     else:
-        outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
 
 
 
@@ -1557,11 +1565,13 @@ def main():
 
     outfile.write("<a name=BulkHash></a>\n<hr>\n<H2>Bulk File Hash Data</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
-    outfile.write("information about Executable File Hashes it Identified. These can be bulk checked \n")
-    outfile.write("using your favorite Threat Intel tools to determine if any of the File Hashes on \n")
-    outfile.write("this machine are known to be malicious. </font></i></p>\n")
+    outfile.write("information about Executable File Hashes it Identified. These were found in the \n")
+    outfile.write("Autorun programs for this workstation. These can be bulk checked \n")
+    outfile.write("using your favorite Threat Intel tools to determine if any of the File Hashes \n")
+    outfile.write("identified on this machine are known to be malicious. </font></i></p>\n")
 
     reccount = 0
+    recdupl = 0
     hshset = set()
     with open(hshnameall) as hshfileall:
         for hshline in hshfileall:
@@ -1569,11 +1579,18 @@ def main():
                 outfile.write(hshline + "<br>")
                 hshset.add(hshline)
                 reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
 
     if reccount < 1:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
     else:
-        outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
+    os.remove(ipsnameall)
+    os.remove(hshnameall)
+
 
 
     ###########################################################################
