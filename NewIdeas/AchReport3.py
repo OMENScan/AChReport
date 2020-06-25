@@ -27,7 +27,7 @@
 #            - Removed Colorizing for now.                            #
 #   v0.90 - Fixed Various Unicode errors fornon-ascii chars.          #
 #            - Credit goes to Dean Woods for these fixes              #
-#   v0.92 - Add Bulk Hashes and IPs for Bulk checking                 #
+#   v0.92 - Add Indicators - Hashes / IP / Domain for bulk checking   #
 ####################################################################### 
 
 import os
@@ -50,6 +50,7 @@ dirname = str(args.dirname)
 dirleft, diright = os.path.split(dirname)
 htmname = diright + ".htm"
 ipsnameall = "AllIps.txt"
+domnameall = "AllDoms.txt"
 hshnameall = "AllHash.txt"
 
 
@@ -256,6 +257,7 @@ def main():
 
     outfile = open(htmname, "w", encoding='utf8', errors="replace")
     ipsfileall = open(ipsnameall, "w", encoding='utf8', errors="replace")
+    domfileall = open(domnameall, "w", encoding='utf8', errors="replace")
     hshfileall = open(hshnameall, "w", encoding='utf8', errors="replace")
     ###########################################################################
     # Write HTML Headers & CSS                                                #
@@ -969,6 +971,11 @@ def main():
                         outfile.write("<" + tdtr + " width=10%>" + csvrow[6] + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
 
+                        # Write out Domain for Bulk Lookup 
+                        url_split = csvrow[0].split('/')
+                        if len(url_split) > 2:
+                            domfileall.write(url_split[2] + "\n")
+
                         reccount = reccount + 1
         outfile.write("</table>\n")
 
@@ -1445,8 +1452,12 @@ def main():
                     outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + RecName.strip() + "</a> </td>\n")
                     outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + RecType.strip() + "</a> </td>\n")
                     outfile.write("<td width=25%> A (Host) </td></tr>\n")
+
                     # Write out IP Address for Bulk Lookup 
                     ipsfileall.write(RecType.strip() + "\n")
+
+                    # Write out Domain for Bulk Lookup 
+                    domfileall.write(RecName.strip() + "\n")
                 elif writeRow == 3:
                     outfile.write("<td width=25%>" + RecName.strip() + "</td>\n")
                     outfile.write("<td width=25%>" + RecType.strip() + "</td>\n")
@@ -1530,11 +1541,12 @@ def main():
     # Write Uniq IP and Hash Files                                            #
     ###########################################################################
     ipsfileall.close() 
+    domfileall.close() 
     hshfileall.close() 
 
     print("[+] De-Duplicating Bulk IP Addresses...")
 
-    outfile.write("<a name=BulkIPs></a>\n<hr>\n<H2>Bulk IP Address Data</H2>\n")
+    outfile.write("<a name=BulkIPs></a>\n<hr>\n<H2>Indicators: IP Address Data</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
     outfile.write("information about IP Addresses it Identified. These were found in Active Connections, \n")
     outfile.write("Resolved DNS Queries, and RDP Logins. These can be bulk checked using your favorite \n")
@@ -1563,7 +1575,7 @@ def main():
 
     print("[+] De-Duplicating Bulk Hashes...")
 
-    outfile.write("<a name=BulkHash></a>\n<hr>\n<H2>Bulk File Hash Data</H2>\n")
+    outfile.write("<a name=BulkHash></a>\n<hr>\n<H2>Indicators: File Hash Data</H2>\n")
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
     outfile.write("information about Executable File Hashes it Identified. These were found in the \n")
     outfile.write("Autorun programs for this workstation. These can be bulk checked \n")
@@ -1587,6 +1599,35 @@ def main():
     else:
         outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
         outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
+
+    print("[+] De-Duplicating Bulk Domains...")
+
+    outfile.write("<a name=BulkDoms></a>\n<hr>\n<H2>Indicators: Domain Data</H2>\n")
+    outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
+    outfile.write("information about Internet Domains it Identified. These were found in the \n")
+    outfile.write("Browser History and DNS Cache for this workstation. These can be bulk checked \n")
+    outfile.write("using your favorite Threat Intel tools to determine if any of the Domains \n")
+    outfile.write("identified on this machine are known to be malicious. </font></i></p>\n")
+
+    reccount = 0
+    recdupl = 0
+    domset = set()
+    with open(domnameall) as domfileall:
+        for domline in domfileall:
+            if domline != "\n" and domline != "MD5\n" and domline not in domset:
+                outfile.write(domline + "<br>")
+                domset.add(domline)
+                reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
+
+    if reccount < 1:
+        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+    else:
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
 
     os.remove(ipsnameall)
     os.remove(hshnameall)
