@@ -27,6 +27,8 @@
 #            - Removed Colorizing for now.                            #
 #   v0.90 - Fixed Various Unicode errors fornon-ascii chars.          #
 #            - Credit goes to Dean Woods for these fixes              #
+#   v0.92 - Add Indicators - Hashes / IP / Domain for bulk checking   #
+#         - Add Callapsible Sectionto make reading easier             #
 ####################################################################### 
 
 import os
@@ -48,6 +50,9 @@ args = parser.parse_args()
 dirname = str(args.dirname)
 dirleft, diright = os.path.split(dirname)
 htmname = diright + ".htm"
+ipsnameall = "AllIps.txt"
+domnameall = "AllDoms.txt"
+hshnameall = "AllHash.txt"
 
 
 ###########################################################################
@@ -252,10 +257,14 @@ def main():
     print("[+] Generating HTML/CSS...")
 
     outfile = open(htmname, "w", encoding='utf8', errors="replace")
-    #outfile = open("AChReport.htm", "w", encoding='utf8', errors="replace")
+    ipsfileall = open(ipsnameall, "w", encoding='utf8', errors="replace")
+    domfileall = open(domnameall, "w", encoding='utf8', errors="replace")
+    hshfileall = open(hshnameall, "w", encoding='utf8', errors="replace")
     ###########################################################################
     # Write HTML Headers & CSS                                                #
     # RESPONSTABLE 2.0 by jordyvanraaij                                       #
+    # CSS Expand / Collapse Code From: CodePen                                #
+    # By: Joshua Azemoh                                                       #
     ###########################################################################
     outfile.write("<html><head><style>\n")
     outfile.write("table {margin: 1em 0; width: 100%; overflow: hidden; background: #FFF; color: #024457; border-radius: 10px; border: 1px solid #167F92;}\n")
@@ -276,34 +285,48 @@ def main():
     outfile.write("h1 {font-family: Verdana; font-weight: normal; color: #024457;}\n")
     outfile.write("h1 span {color: #167F92;}\n")
 
+    outfile.write(".collapse {display: none;}\n")
+    outfile.write(".collapse + label {cursor: pointer; display: block; font-weight: bold; line-height: 21px; margin-bottom: 5px;}\n")
+    outfile.write(".collapse + label + div {display: none; margin-bottom: 10px;}\n")
+    outfile.write(".collapse:checked + label + div {display: block;}\n")
+    outfile.write(".collapse + label:before {background-color: #4F5150; -webkit-border-radius: 10px; -moz-border-radius: 10px;\n")
+    outfile.write(" border-radius: 10px; color: #FFFFFF; content: \"+\"; display: block; float: left; font-weight: bold; height: 20px;\n")
+    outfile.write(" line-height: 20px; margin-right: 5px; text-align: center; width: 20px;}\n")
+    outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
+
     outfile.write("</style><title>AChoir Endpoint Report(" + diright + ")</title></head>\n")
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
     outfile.write("<a name=Top></a>\n<H1>AChoir Endpoint Report</H1>\n")
     outfile.write("(" + diright + ")<br>\n")
 
-    outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+    outfile.write("<table border=1 cellpadding=3 width=100%>\n")
     outfile.write("<tr><td width=6%> <a href=#Top>Top</a> </td>\n")
     outfile.write("<td width=7%> <a href=#Deleted>Deleted</a> </td>\n")
     outfile.write("<td width=7%> <a href=#Active>Active</a> </td>\n")
     outfile.write("<td width=6%> <a href=#ExeTemp>Temp</a> </td>\n")
-    outfile.write("<td width=9%> <a href=#Logins>FailLogin</a> </th>\n")
+    outfile.write("<td width=8%> <a href=#Logins>FailLogn</a> </th>\n")
     outfile.write("<td width=7%> <a href=#RDP>RDP</a> </th>\n")
     outfile.write("<td width=7%> <a href=#Browser>Browser</a> </td>\n")
     outfile.write("<td width=8%> <a href=#Prefetch>Prefetch</a> </td>\n")
-    outfile.write("<td width=9%> <a href=#UserAssist>UserAssist</a> </td>\n")
-    outfile.write("<td width=9%> <a href=#IPConn>IP_Conn</a> </td>\n")
+    outfile.write("<td width=8%> <a href=#UserAssist>UsrAssist</a> </td>\n")
+    outfile.write("<td width=6%> <a href=#IPConn>IPCon</a> </td>\n")
     outfile.write("<td width=6%> <a href=#DNSCache> DNS </a> </td>\n")
     outfile.write("<td width=7%> <a href=#AutoRun>AutoRun</a> </td>\n")
     outfile.write("<td width=6%> <a href=#InstSVC>EVTx</a> </td>\n")
-    outfile.write("<td width=6%> <a href=#RBin>RBin</a> </td></tr>\n")
+    outfile.write("<td width=6%> <a href=#RBin>RBin</a> </td>\n")
+    outfile.write("<td width=5%> <a href=#BulkIPs>IOC</a> </td></tr>\n")
     outfile.write("</table>\n")
 
     outfile.write("</Center></p>\n")
 
     # Write Basic Data
     print("[+] Generating Basic Endpoint Information...")
+
+    outfile.write("<input class=\"collapse\" id=\"id01\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id01\">\n")
     outfile.write("<H2>Basic Endpoint Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     filname = dirname + "\\info.dat"
     dedname = "SysInfo.dat"
@@ -380,6 +403,8 @@ def main():
         outfile.write("the endpoint.</font></i></p>\n")
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Clean Up.                                                               #
@@ -391,7 +416,10 @@ def main():
     # Write Logon Data                                                        #
     ###########################################################################
     print("[+] Generating Logon Information...")
-    outfile.write("<hr><H2>Logon Information</H2>\n")
+    outfile.write("<input class=\"collapse\" id=\"id02\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id02\">\n")
+    outfile.write("<H2>Logon Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about what Users are \n")
     outfile.write("Logged in to the endpoint. This information was extracted using the Microsoft \n")
@@ -409,6 +437,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Small Deleted Files ($MFT) - (Use Python CSV Reader Module)             #
@@ -418,7 +448,11 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("<a name=Deleted></a>\n<hr><H2>Small Deleted Files (Between 1 Meg and 10 meg)</H2>\n")
+        outfile.write("<a name=Deleted></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id03\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id03\">\n")
+        outfile.write("<H2>Small Deleted Files (Between 1 Meg and 10 meg)</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about Deleted Files \n")
         outfile.write("that are between 1 and 10 Megabytes.  This can be completely normal, or it \n")
@@ -460,6 +494,9 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
     # Medium Deleted Files ($MFT) - (Use Python CSV Reader Module)            #
@@ -468,7 +505,10 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("\n<hr><H2>Medium Deleted Files (Between 10 Meg and 100 meg)</H2>\n")
+        outfile.write("<input class=\"collapse\" id=\"id04\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id04\">\n")
+        outfile.write("<H2>Medium Deleted Files (Between 10 Meg and 100 meg)</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about Deleted Files \n")
         outfile.write("that are between 10 and 100 Megabytes.  This can be completely normal, or it \n")
@@ -510,6 +550,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Large Deleted Files ($MFT) - (Use Python CSV Reader Module)             #
@@ -518,7 +560,10 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("\n<hr><H2>Large Deleted Files (Over 100 Meg)</H2>\n")
+        outfile.write("<input class=\"collapse\" id=\"id05\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id05\">\n")
+        outfile.write("<H2>Large Deleted Files (Over 100 Meg)</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about Deleted Files \n")
         outfile.write("that are larger than 100 Megabytes.  This can be completely normal, or it \n")
@@ -560,6 +605,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
@@ -570,8 +617,11 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("<a name=Active></a>\n<hr>\n<H2>Large Active Files (Over 100 Meg)</H2>\n")
-
+        outfile.write("<a name=Active></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id06\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id06\">\n")
+        outfile.write("<H2>Large Active Files (Over 100 Meg)</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about(Active) Files \n")
         outfile.write("that are larger than 100 Megabytes.  This can be completely normal, or it \n")
@@ -613,6 +663,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
@@ -623,8 +675,11 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("<a name=ExeTemp></a>\n<hr>\n<H2>Active Executable Files in Temp Directories</H2>\n")
-
+        outfile.write("<a name=ExeTemp></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id07\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id07\">\n")
+        outfile.write("<H2>Active Executable Files in Temp Directories</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about Active Executable Files \n")
         outfile.write("in Temp Directories.  These files can indicate hostile executables (malware) that have been \n")
@@ -669,6 +724,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Deleted Exe Files in Temp Directories - (Use Python CSV Reader Module)  #
@@ -678,8 +735,11 @@ def main():
 
     if os.path.isfile(filname):
         reccount = 0
-        outfile.write("<a name=ExeTemp></a>\n<hr>\n<H2>Deleted Executable Files in Temp Directories</H2>\n")
-
+        outfile.write("<a name=DelExeTemp></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id08\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id08\">\n")
+        outfile.write("<H2>Deleted Executable Files in Temp Directories</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
         outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about Deleted Executable Files \n")
         outfile.write("in Temp Directories.  These files can indicate hostile executables (malware) that have been \n")
@@ -724,6 +784,8 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Clean Up.                                                               #
@@ -736,7 +798,11 @@ def main():
     # Write Success RDP Logins (Use Python CSV Reader Module)                 #
     ###########################################################################
     print("[+] Generating Sucessful RDP Login Information...")
-    outfile.write("<a name=RDP></a>\n<hr>\n<H2>Successful RDP Logins</H2>\n")
+    outfile.write("<a name=RDP></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id09\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id09\">\n")
+    outfile.write("<H2>Successful RDP Logins</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("succesful RDP Logins.  These are EventID 4624-LogonType 10 events in the \n")
@@ -766,6 +832,9 @@ def main():
                     outfile.write("<" + tdtr + " width=10%>" + csvrow[4] + "</" + tdtr + ">\n")
                     outfile.write("<" + tdtr + " width=20%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
 
+                    # Write out IP Address for Bulk Lookup 
+                    ipsfileall.write(csvrow[5] + "\n")
+
                     reccount = reccount + 1
         outfile.write("</table>\n")
         os.remove(filname)
@@ -777,12 +846,18 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Write Failed Logins (Use Python CSV Reader Module)                      #
     ###########################################################################
     print("[+] Generating Failed Logins Information...")
-    outfile.write("<a name=Logins></a>\n<hr>\n<H2>Failed Logins</H2>\n")
+    outfile.write("<a name=Logins></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id10\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id10\">\n")
+    outfile.write("<H2>Failed Logins</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Failed Logins.  These are EventID 4625 events in the Windows Security Event Log.\n")
@@ -840,13 +915,20 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
     # Write File Browser Data/Archive types  (Use Python CSV Reader Module)   #
     ###########################################################################
     print("[+] Generating File History access to Archive Files...")
-    outfile.write("<a name=Browser></a>\n<hr>\n<H2>File Browse (Archive files) History Information</H2>\n")
+    outfile.write("<a name=Browser></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id11\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id11\">\n")
+    outfile.write("<H2>File Browse (Archive files) History Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Accessed Files that have an Archive File Type (i.e. .Arc, .Rar, .Zip, .Tar, .7z, .Cab)\n")
     outfile.write("These Entries indicate that someone (or multiple people) archived data into a compressed\n")
@@ -887,13 +969,20 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
     # Write Web Browser Data (Use Python CSV Reader Module)                   #
     ###########################################################################
     print("[+] Generating File and Web Browser Information...")
-    outfile.write("<hr>\n<H2>File Browse History Information</H2>\n")
+    outfile.write("<a name=BrwFilHist></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id12\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id12\">\n")
+    outfile.write("<H2>File Browse History Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("accessed files. These files were accessed on the machine and may indicate hostile\n")
     outfile.write("program installation or execution, as well as access to sensitive or hostile files.\n")
@@ -934,11 +1023,17 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Write Web Browser Data (Use Python CSV Reader Module)                   #
     ###########################################################################
-    outfile.write("<hr>\n<H2>Internet Browse History Information</H2>\n")
+    outfile.write("<a name=BrwHist></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id13\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id13\">\n")
+    outfile.write("<H2>Internet Browse History Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     reccount = 0
     filname = dirname + "\\brw\\BrowseHist.csv"
@@ -962,6 +1057,11 @@ def main():
                         outfile.write("<" + tdtr + " width=10%>" + csvrow[6] + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
 
+                        # Write out Domain for Bulk Lookup 
+                        url_split = csvrow[0].split('/')
+                        if len(url_split) > 2:
+                            domfileall.write(url_split[2] + "\n")
+
                         reccount = reccount + 1
         outfile.write("</table>\n")
 
@@ -972,12 +1072,20 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
     # Write Prefetch Data (Use Python CSV Reader Module)                      #
     ###########################################################################
     print("[+] Generating Prefetch Information...")
-    outfile.write("<a name=Prefetch></a>\n<hr>\n<H2>Prefetch History Information</H2>\n")
+    outfile.write("<a name=Prefetch></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id14\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id14\">\n")
+    outfile.write("<H2>Prefetch History Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Prefetch files. Prefetch files are generated by Windows to make loading previously \n")
     outfile.write("executed programs faster when they are executed again.  These files are forensically \n")
@@ -1020,12 +1128,18 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Write Connection Data (Use Python CSV Reader Module)                    #
     ###########################################################################
     print("[+] Generating IP Connections Information...")
-    outfile.write("<a name=IPConn></a>\n<hr>\n<H2>IP Connections Information</H2>\n")
+    outfile.write("<a name=IPConn></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id15\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id15\">\n")
+    outfile.write("<H2>IP Connections Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Windows IP Connections (TCP and UDP). It is not unusual for many programs to open \n")
@@ -1066,6 +1180,10 @@ def main():
                     outfile.write("<td width=15%>" + csvrow[9] + "</td>\n")
                     outfile.write("<td width=7%>" + csvrow[10] + "</td>\n")
                     outfile.write("<td width=30%>" + csvrow[11] + "</td></tr>\n")
+
+                    # Write out IP Address for Bulk Lookup 
+                    ipsfileall.write(csvrow[8] + "\n")
+
         outfile.write("</table>\n")
 
         if reccount < 2:
@@ -1075,13 +1193,20 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
     # Write User Assist Data (Use Python CSV Reader Module)                   #
     ###########################################################################
     print("[+] Generating User Assist Information...")
-    outfile.write("<a name=UserAssist></a>\n<hr>\n<H2>HKCU User Assist Information</H2>\n")
+    outfile.write("<a name=UserAssist></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id16\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id16\">\n")
+    outfile.write("<H2>HKCU User Assist Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("the Windows UserAssist Registry Keys (Both System and User Hives). UserAssist keys \n")
     outfile.write("are created by Windows to save program window locations.  These files are forensically \n")
@@ -1117,12 +1242,18 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
     # Write Other User Assist Data (Gathered from RegRipper Earlier)          #
     ###########################################################################
-    outfile.write("<hr>\n<H2>Other User Assist Information</H2>\n")
+    outfile.write("<a name=MoreUsrAst></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id17\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id17\">\n")
+    outfile.write("<H2>Other User Assist Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     filcount = 0
 
@@ -1162,6 +1293,8 @@ def main():
     if filcount < 2:
         outfile.write("<p><b><font color = red> No User Assist (NTUSER.DAT) Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
 
     ###########################################################################
@@ -1169,7 +1302,11 @@ def main():
     ###########################################################################
     print("[+] Generating AutoRuns Information...")
 
-    outfile.write("<a name=AutoRun></a>\n<hr>\n<H2>AutoRun Information (Run And RunOnce)</H2>\n")
+    outfile.write("<a name=AutoRun></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id18\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id18\">\n")
+    outfile.write("<H2>AutoRun Information (Run And RunOnce)</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Run and RunOnce Registry Keys.  These are THE MOST common Registry keys where malicious \n")
@@ -1218,11 +1355,18 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
     # Write AutoRunsc Data (Use Python CSV Reader Module)                     #
     ###########################################################################
-    outfile.write("<hr>\n<H2>AutoRun Information (All)</H2>\n")
+    outfile.write("<a name=AllAutoRun></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id19\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id19\">\n")
+    outfile.write("<H2>AutoRun Information (All)</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("several AutoRun settings.  These can show several different places where malicious \n")
@@ -1256,6 +1400,9 @@ def main():
                     outfile.write("<" + tdtr + " width=30%>" + csvrow[8] + "<hr>" + csvrow[10] + "</" + tdtr + ">\n")
                     if len(csvrow) > 11:
                         outfile.write("<" + tdtr + " width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[11] + ">" + csvrow[11] + "</a> </td>\n")
+
+                        # Write out Hash for Bulk Lookup 
+                        hshfileall.write(csvrow[11] + "\n")
                     else:
                         outfile.write("<" + tdtr + " width=15%> " + Hash + " </td>\n")
                     outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
@@ -1271,12 +1418,19 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
-    # Write 7045 Installed Sesrvices Log Entries                              #
+    # Write 7045 Installed Services Log Entries                               #
     ###########################################################################
     print("[+] Generating 7045 Installed Services Logs...")
-    outfile.write("<a name=InstSvc></a>\n<hr>\n<H2>Installed Services</H2>\n")
+    outfile.write("<a name=InstSvc></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id20\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id20\">\n")
+    outfile.write("<H2>Installed Services</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Installed Services.  These are EventID 7045 System Events in the \n")
@@ -1316,12 +1470,19 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
     # Write 4698 New Sched Tasks Log Entries                                  #
     ###########################################################################
     print("[+] Generating 4698 New Sched Tasks Logs...")
-    outfile.write("<a name=NewTask></a>\n<hr>\n<H2>New Scheduled Tasks</H2>\n")
+    outfile.write("<a name=NewTask></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id21\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id21\">\n")
+    outfile.write("<H2>New Scheduled Tasks</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("New Scheduled Tasks.  These are EventID 4698 System Events in the \n")
@@ -1364,13 +1525,20 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
+
 
     ###########################################################################
     # Write DNS Cache Data = Flat File.                                       #
     ###########################################################################
     print("[+] DNS Cache Information...")
 
-    outfile.write("<a name=DNSCache></a>\n<hr>\n<H2>DNS Cache (IPConfig /displaydns)</H2>\n")
+    outfile.write("<a name=DNSCache></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id22\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id22\">\n")
+    outfile.write("<H2>DNS Cache (IPConfig /displaydns)</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
     outfile.write("Cached DNS. These entries show the DNS resolution that the endpoint did.  This can indicate \n")
@@ -1431,6 +1599,12 @@ def main():
                     outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + RecName.strip() + "</a> </td>\n")
                     outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + RecType.strip() + "</a> </td>\n")
                     outfile.write("<td width=25%> A (Host) </td></tr>\n")
+
+                    # Write out IP Address for Bulk Lookup 
+                    ipsfileall.write(RecType.strip() + "\n")
+
+                    # Write out Domain for Bulk Lookup 
+                    domfileall.write(RecName.strip() + "\n")
                 elif writeRow == 3:
                     outfile.write("<td width=25%>" + RecName.strip() + "</td>\n")
                     outfile.write("<td width=25%>" + RecType.strip() + "</td>\n")
@@ -1455,12 +1629,19 @@ def main():
     else:
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
+    outfile.write("</div>\n")
+
 
     ###########################################################################
     # Write Out Recycle Bin data ($I Files)                                   #
     ###########################################################################
     print("[+] Generating Recycle Bin ($Recycle.Bin) Information...")
-    outfile.write("<a name=RBin></a>\n<hr>\n<H2>Recycle Bin ($Recycle.Bin) Information</H2>\n")
+
+    outfile.write("<a name=RBin></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id23\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id23\">\n")
+    outfile.write("<H2>Recycle Bin ($Recycle.Bin) Information</H2>\n")
+    outfile.write("</label><div><hr>\n")
 
     reccount = 0
     filname = "RBin.dat"
@@ -1507,6 +1688,128 @@ def main():
         outfile.write("<p><i><font color=firebrick>AChoir was not able to parse\n")
         outfile.write("the endpoint Recycle Bin information.</font></i></p>\n")
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+
+    outfile.write("</div>\n")
+
+
+
+    ###########################################################################
+    # Write Uniq IP and Hash Files                                            #
+    ###########################################################################
+    ipsfileall.close() 
+    domfileall.close() 
+    hshfileall.close() 
+
+    print("[+] De-Duplicating Bulk IP Addresses...")
+
+    outfile.write("<a name=BulkIPs></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id24\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id24\">\n")
+    outfile.write("<H2>Indicators: IP Address Data</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
+    outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
+    outfile.write("information about IP Addresses it Identified. These were found in Active Connections, \n")
+    outfile.write("Resolved DNS Queries, and RDP Logins. These can be bulk checked using your favorite \n")
+    outfile.write("Threat Intel tools to determine if any of the IP addresses on this machine are \n")
+    outfile.write("known to be malicious. </font></i></p>\n")
+
+    reccount = 0
+    recdupl = 0
+    ipsset = set()
+    with open(ipsnameall) as ipsfileall:
+        for ipsline in ipsfileall:
+            if ipsline != "\n" and ipsline != "0.0.0.0\n" and ipsline != "::\n" and ipsline not in ipsset:
+                outfile.write(ipsline + "<br>")
+                ipsset.add(ipsline)
+                reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
+
+    if reccount < 1:
+        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+    else:
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
+    outfile.write("</div>\n")
+
+
+
+    print("[+] De-Duplicating Bulk Hashes...")
+
+    outfile.write("<a name=BulkHash></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id25\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id25\">\n")
+    outfile.write("<H2>Indicators: File Hash Data</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
+    outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
+    outfile.write("information about Executable File Hashes it Identified. These were found in the \n")
+    outfile.write("Autorun programs for this workstation. These can be bulk checked \n")
+    outfile.write("using your favorite Threat Intel tools to determine if any of the File Hashes \n")
+    outfile.write("identified on this machine are known to be malicious. </font></i></p>\n")
+
+    reccount = 0
+    recdupl = 0
+    hshset = set()
+    with open(hshnameall) as hshfileall:
+        for hshline in hshfileall:
+            if hshline != "\n" and hshline != "MD5\n" and hshline not in hshset:
+                outfile.write(hshline + "<br>")
+                hshset.add(hshline)
+                reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
+
+    if reccount < 1:
+        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+    else:
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
+    outfile.write("</div>\n")
+
+
+    print("[+] De-Duplicating Bulk Domains...")
+
+    outfile.write("<a name=BulkDoms></a>\n")
+    outfile.write("<input class=\"collapse\" id=\"id26\" type=\"checkbox\" checked>\n")
+    outfile.write("<label for=\"id26\">\n")
+    outfile.write("<H2>Indicators: Domain Data</H2>\n")
+    outfile.write("</label><div><hr>\n")
+
+    outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed and de-duplicated \n")
+    outfile.write("information about Internet Domains it Identified. These were found in the \n")
+    outfile.write("Browser History and DNS Cache for this workstation. These can be bulk checked \n")
+    outfile.write("using your favorite Threat Intel tools to determine if any of the Domains \n")
+    outfile.write("identified on this machine are known to be malicious. </font></i></p>\n")
+
+    reccount = 0
+    recdupl = 0
+    domset = set()
+    with open(domnameall) as domfileall:
+        for domline in domfileall:
+            if domline != "\n" and domline != "MD5\n" and domline not in domset:
+                outfile.write(domline + "<br>")
+                domset.add(domline)
+                reccount = reccount + 1
+            else:
+                recdupl = recdupl + 1
+
+    if reccount < 1:
+        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+    else:
+        outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+        outfile.write("Duplicates Found: " + str(recdupl) + "</p>\n")
+
+    outfile.write("</div>\n")
+
+
+    os.remove(ipsnameall)
+    os.remove(domnameall)
+    os.remove(hshnameall)
+
 
 
     ###########################################################################
