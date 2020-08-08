@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: v0.88 (Python 3.x)                                         #
+# Version: v0.93 (Python 3.x)                                         #
 # Author.: David Porco                                                #
 # Release: 11/16/2018                                                 #
 #                                                                     #
@@ -29,6 +29,8 @@
 #            - Credit goes to Dean Woods for these fixes              #
 #   v0.92 - Add Indicators - Hashes / IP / Domain for bulk checking   #
 #         - Add Callapsible Sectionto make reading easier             #
+#   v0.93 - RegRipper 2.8 No Longer available - Use v3.0              #
+#           replace winnt_cv plugin with source_os plugin             #
 ####################################################################### 
 
 import os
@@ -82,15 +84,15 @@ def main():
     else:
         print("[*] Copying Regripper Plugins From AChoir Install...")
         returned_value = os.system("mkdir plugins")
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\compname.pl .\\plugins\compname.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\compname.pl .\\plugins\compname.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\shellfolders.pl .\\plugins\shellfolders.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\shellfolders.pl .\\plugins\shellfolders.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\userassist.pl .\\plugins\\userassist.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\userassist.pl .\\plugins\\userassist.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\winnt_cv.pl .\\plugins\winnt_cv.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\source_os.pl .\\plugins\source_os.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper2.8-master\\plugins\\winver.pl .\\plugins\winver.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\winver.pl .\\plugins\winver.pl"
         returned_value = os.system(cmdexec)
 
     GotDepend = 1
@@ -112,10 +114,10 @@ def main():
         print("[!] Regripper Plugin NOT Found: userassist.pl")
         GotDepend = 0
 
-    if os.path.isfile(".\plugins\winnt_cv.pl"):
-        print("[+] Regripper Plugin Found: winnt_cv.pl")
+    if os.path.isfile(".\plugins\source_os.pl"):
+        print("[+] Regripper Plugin Found: source_os.pl")
     else:
-        print("[!] Regripper Plugin NOT Found: winnt_cv.pl")
+        print("[!] Regripper Plugin NOT Found: source_os.pl")
         GotDepend = 0
 
     if os.path.isfile(".\plugins\winver.pl"):
@@ -153,13 +155,13 @@ def main():
     print("[+] Now Building Additional Data from Sources...")
     print("[+] Generating System Information from Registry...")
 
-    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p winnt_cv -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p source_os -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
     returned_value = os.system(cmdexec)
 
-    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
-    cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
+    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
     returned_value = os.system(cmdexec)
 
 
@@ -178,10 +180,10 @@ def main():
             curfile = os.path.join(root, fname)
             if fname.startswith("NTUSER."):
                 curouput = "shlasst." + str(reccount)
-                cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p shellfolders -r " + curfile + " > " + curouput
+                cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p shellfolders -r " + curfile + " > " + curouput
                 returned_value = os.system(cmdexec)
 
-                cmdexec = dirleft + "\\RRV\\RegRipper2.8-master\\rip.exe -p userassist -r " + curfile + " >> " + curouput
+                cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p userassist -r " + curfile + " >> " + curouput
                 returned_value = os.system(cmdexec)
 
                 reccount = reccount + 1
@@ -389,14 +391,16 @@ def main():
             elif innline.startswith("ProductName "):
                 outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("CSDVersion"):
+            elif innline.startswith("ReleaseID"):
+                outfile.write(innline.strip() + "<br>\n")
+
+            elif innline.startswith("RegisteredOwner"):
                 outfile.write(innline.strip() + "<br>\n")
 
             elif innline.startswith("InstallDate "):
                 outfile.write(innline.strip() + "<br>\n")
 
         innfile.close()
-        os.remove(dedname)
 
     else:
         outfile.write("<p><i><font color=firebrick>AChoir was not able to parse standard information about\n")
@@ -409,7 +413,7 @@ def main():
     ###########################################################################
     # Clean Up.                                                               #
     ###########################################################################
-    os.remove("SysInfo.dat")
+    os.remove(dedname)
 
 
     ###########################################################################
