@@ -22,6 +22,7 @@ IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires 
 3. AChReport requires that an AChoir extraction was performed (Live Response or Dead-Box)
 4. AChReport requires a few additional components including: MS LogParser in the same directory as AChReport.py, and some RegRipper plugins in a subdirectory called "plugins"
 5. AChReport is meant to run on Windows
+6. AChReport now supports AChoir, and the Windows collections of AChoirX
 
 RegRipper can be found at:
  https://github.com/keydet89/RegRipper2.8

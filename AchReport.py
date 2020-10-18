@@ -31,6 +31,7 @@
 #         - Add Callapsible Sectionto make reading easier             #
 #   v0.93 - RegRipper 2.8 No Longer available - Use v3.0              #
 #           replace winnt_cv plugin with source_os plugin             #
+#   v0.94 - Minor modifications to work with AChoirX                  #
 ####################################################################### 
 
 import os
@@ -189,12 +190,30 @@ def main():
                 reccount = reccount + 1
 
     print("[+] Generating RDP Success and Failure...")
-    cmdexec = "copy " + dirname + "\\evt\\sys32\\Security.evtx"
-    returned_value = os.system(cmdexec)
+
+    EvtName = dirname + "\\evt\\sys32\\Security.evtx"
+    if os.path.isfile(EvtName):
+        cmdexec = "copy " + EvtName
+        returned_value = os.system(cmdexec)
+
+    EvtName = dirname + "\\evt\\nativ\\Security.evtx"
+    if os.path.isfile(EvtName):
+        cmdexec = "copy " + EvtName
+        returned_value = os.system(cmdexec)
 
     print("[+] Generating Service Installed (7045) Messages...")
-    cmdexec = "copy " + dirname + "\\evt\\sys32\\System.evtx"
-    returned_value = os.system(cmdexec)
+
+    EvtName = dirname + "\\evt\\sys32\\System.evtx"
+    if os.path.isfile(EvtName):
+        cmdexec = "copy " + EvtName
+        returned_value = os.system(cmdexec)
+
+    EvtName = dirname + "\\evt\\nativ\\System.evtx"
+    if os.path.isfile(EvtName):
+        cmdexec = "copy " + EvtName
+        returned_value = os.system(cmdexec)
+
+
 
     ###########################################################################
     # Use Wevtutil to "export" the event log.  This has the effect of         #
@@ -238,8 +257,19 @@ def main():
     # Parse the $MFT                                                          #
     ###########################################################################
     print("[+] Parsing $MFT...")
-    cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + dirname + "\\RawData\\$MFT" 
-    returned_value = os.system(cmdexec)
+    MFTFound = 0
+
+    MFTName = dirname + "\\RawData\\$MFT"
+    if os.path.isfile(MFTName):
+        cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName 
+        returned_value = os.system(cmdexec)
+
+    MFTName = dirname + "\\RawData\\MFT-C"
+    if os.path.isfile(MFTName):
+        cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName
+        returned_value = os.system(cmdexec)
+
+
 
 
     ###########################################################################
