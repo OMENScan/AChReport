@@ -13,6 +13,8 @@ Since AChoir can already extract these common Windows artifacts (Live Response O
 
 AChReport IS NOT meant as a comprehensive reporting tool.  It's power is in extracting the most important information and presenting it in an easy to understand format.  AChReport IS NOT meant to replace your favorite forensics tool.  It is meant to meet the need for a quick, simple view of a machine.
 
+As of AChReport v0.95 - You can select which Sections to generate in the report via the AChReport.cfg file
+
 IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
 
 # Some Things to Know
