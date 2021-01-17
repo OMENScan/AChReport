@@ -15,6 +15,8 @@ AChReport IS NOT meant as a comprehensive reporting tool.  It's power is in extr
 
 As of AChReport v0.95 - You can select which Sections to generate in the report via the AChReport.cfg file
 
+Use -c <ConfigFileName> for different report configurations.
+
 IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
 
 # Some Things to Know

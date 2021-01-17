@@ -45,12 +45,15 @@ import ctypes
 parser = argparse.ArgumentParser(description="Format AChoir Output into a Report")
 parser.add_argument("-d", dest="dirname", 
                   help="AChoir Extraction Directory Name")
+parser.add_argument("-c", dest="cfgname", default="AChReport.cfg", 
+                  help="AChoir Report Configuration File")
 args = parser.parse_args()
 
 
 ###########################################################################
 # Where are the Artifacts, What id the Output File Name
 ###########################################################################
+cfgname = str(args.cfgname)
 dirname = str(args.dirname)
 dirleft, diright = os.path.split(dirname)
 htmname = diright + ".htm"
@@ -154,15 +157,14 @@ def main():
     ###########################################################################
     # Fell Through - Look for Config File                                     #
     ###########################################################################
-    cfgname = "AChReport.cfg"
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
     RunIndHsh = RunIndDom = SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = 0
 
     print("[+] Checking For Config File...")
-    if os.path.isfile("AChReport.cfg"):
-        print("[+] Config File Found, Now Parsing Config Options...")
+    if os.path.isfile(cfgname):
+        print("[+] Config File Found (" + cfgname + "), Now Parsing Config Options...")
 
         cfgfile = open(cfgname, encoding='utf8', errors="replace")
 
@@ -254,7 +256,7 @@ def main():
                 RunIndDom = 1
 
     else:
-        print("[!] Config File Not Found, Default Setting Configured.")
+        print("[!] Config File Not Found (" + cfgname + "), Default Setting Configured.")
         RunAllAll = 1
 
 
