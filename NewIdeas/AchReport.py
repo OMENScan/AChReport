@@ -1525,8 +1525,55 @@ def main():
             print("[!] Bypassing IP Connections Information (No Input Data) ...")
             outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
-        outfile.write("</div>\n")
 
+        ###########################################################################
+        # This section looks for the netstat-abno.dat file and reformats it.      #
+        ###########################################################################
+        reccount = 0
+        filname = dirname + "\\sys\\netstat-abno.dat"
+
+        if os.path.isfile(filname):
+            print("[+] Testing Netstat -abno Routine...")
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<th width=5%> Prot. </th>\n")
+            outfile.write("<th width=15%> Local IP:Port </th>\n")
+            outfile.write("<th width=15%> Remote IP:Port </th>\n")
+            outfile.write("<th width=10%> State </th>\n")
+            outfile.write("<th width=5%> PID </th>\n")
+            outfile.write("<th width=25%> Component </th>\n")
+            outfile.write("<th width=25%> Process </th></tr>\n")
+
+            innfile = open(filname, encoding='utf8', errors="replace")
+            for innline in innfile:
+                if innline.startswith("  TCP ") or innline.startswith("  UDP "):
+                    ConnSplit = innline.split()
+                    if len(ConnSplit) == 5:
+                        if reccount > 0:
+                            outfile.write("</tr>\n")
+
+                        outfile.write("<tr><td width=10%>" + ConnSplit[0] + "</td>\n")
+                        outfile.write("<td width=10%>" + ConnSplit[1] + "</td>\n")
+                        outfile.write("<td width=10%>" + ConnSplit[2] + "</td>\n")
+                        outfile.write("<td width=30%>" + ConnSplit[3] +  "</td>\n")
+                        outfile.write("<td width=30%>" + ConnSplit[4] +  "</td>\n")
+                        reccount = reccount + 1
+
+                    elif len(ConnSplit) == 4:
+                        if reccount > 0:
+                            outfile.write("</tr>\n")
+                        outfile.write("</tr><tr><td width=10%>" + ConnSplit[0] + "</td>\n")
+                        outfile.write("<td width=10%>" + ConnSplit[1] + "</td>\n")
+                        outfile.write("<td width=10%>" + ConnSplit[2] + "</td>\n")
+                        outfile.write("<td width=30%> - </td>\n")
+                        outfile.write("<td width=30%>" + ConnSplit[3] +  "</td>\n")
+                        reccount = reccount + 1
+                else:
+                    if reccount > 0:
+                        outfile.write("<td width=25%>" + innline +  "</td>\n")
+
+            outfile.write("</table>\n")
+
+        outfile.write("</div>\n")
 
     else:
         print("[+] Bypassing IP Connections Information...")
