@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: v0.93 (Python 3.x)                                         #
+# Version: beta v0.96 (Python 3.x)                                    #
 # Author.: David Porco                                                #
-# Release: 11/16/2018                                                 #
+# Release: 01/17/2021                                                 #
 #                                                                     #
 #   Read the artifacts output by AChoir and create a report           #
 #                                                                     #
@@ -33,6 +33,7 @@
 #           replace winnt_cv plugin with source_os plugin             #
 #   v0.94 - Minor modifications to work with AChoirX                  #
 #   v0.95 - Add Configuration File (Select Report Sections to Run)    #
+#   v0.96 - Add some error correction if Source files are missing     #
 ####################################################################### 
 
 import os
@@ -160,7 +161,8 @@ def main():
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
-    RunIndHsh = RunIndDom = SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = 0
+    RunIndHsh = RunIndDom = 0
+    SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = 0
 
     print("[+] Checking For Config File...")
     if os.path.isfile(cfgname):
@@ -266,42 +268,84 @@ def main():
     ###########################################################################
     print("[+] Now Building Additional Data from Sources...")
     print("[+] Generating System Information from Registry...")
+    
+    regName = dirname + "\Reg\SOFTWARE"
+    if os.path.isfile(regName):
+        SrcSysReg = 1
+    
+        exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
+        if os.path.isfile(exeName):
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p source_os -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
+            returned_value = os.system(cmdexec)
 
-    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p source_os -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
-    returned_value = os.system(cmdexec)
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
+            returned_value = os.system(cmdexec)
 
-    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
-    returned_value = os.system(cmdexec)
+            SrcSysTxt = 1
+        else:
+            print("[!] RegRipper Not Found...")
+            SrcSysReg = 0
 
-    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
-    returned_value = os.system(cmdexec)
+    else:
+        print("[!] SOFTWARE Registry Not Found...")
+        SrcSysReg = 0
+
+
+    regName = dirname + "\Reg\SYSTEM"
+    if os.path.isfile(regName):
+        SrcSysReg = 1
+
+        exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
+        if os.path.isfile(exeName):
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
+            returned_value = os.system(cmdexec)
+
+            SrcSysTxt = 1
+        else:
+            print("[!] RegRipper Not Found...")
+            SrcSysReg = 0
+    else:
+        print("[!] SYSTEM Registry Not Found...")
+        SrcSysReg = 0
 
 
     if RunAllAll == 1 or SrcPrf == 1:
         print("[+] Generating Prefetch Data...")
-        cmdexec = dirleft + "\\SYS\\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
-        returned_value = os.system(cmdexec)
+        exeName = dirleft + "\\SYS\\WinPrefetchView.exe"
+
+        if os.path.isfile(exeName):
+            cmdexec = dirleft + "\\SYS\\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
+            returned_value = os.system(cmdexec)
+        else:
+            print("[!] WinPrefetchView Not Found...")
+            SrcPrf = 0
     else:
         print("[+] Bypassing Prefetch Data...")
 
 
     if RunAllAll == 1 or SrcNTUsr == 1:
-      print("[+] Generating User Assist for Multiple User Profiles...")
-      reccount = 0
-      curdir = dirname + "\\reg"
+        print("[+] Generating User Assist for Multiple User Profiles...")
+        reccount = 0
+        curdir = dirname + "\\reg"
+        for root, dirs, files in os.walk(curdir):
+            for fname in files:
+                fnameUpper = fname.upper()
+                curfile = os.path.join(root, fname)
 
-      for root, dirs, files in os.walk(curdir):
-          for fname in files:
-              curfile = os.path.join(root, fname)
-              if fname.startswith("NTUSER."):
-                  curouput = "shlasst." + str(reccount)
-                  cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p shellfolders -r " + curfile + " > " + curouput
-                  returned_value = os.system(cmdexec)
+                if fnameUpper.startswith("NTUSER."):
+                    curouput = "shlasst." + str(reccount)
 
-                  cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p userassist -r " + curfile + " >> " + curouput
-                  returned_value = os.system(cmdexec)
+                    astfile = open(curouput, "w", encoding='utf8', errors="replace")
+                    astfile.write("<h2>User Registry: " + curfile + "</h2>\n")
+                    astfile.close()
 
-                  reccount = reccount + 1
+                    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p shellfolders -r " + curfile + " >> " + curouput
+                    returned_value = os.system(cmdexec)
+
+                    cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p userassist -r " + curfile + " >> " + curouput
+                    returned_value = os.system(cmdexec)
+
+                    reccount = reccount + 1
     else:
       print("[+] ByPassing User Assist for Multiple User Profiles...")
 
@@ -314,11 +358,15 @@ def main():
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
+        else:
+            EvtName = dirname + "\\evt\\nativ\\Security.evtx"
+            if os.path.isfile(EvtName):
+                cmdexec = "copy " + EvtName
+                returned_value = os.system(cmdexec)
+            else:
+                SrcEvtx = 0
+                print("[!] Security Event Log Not Found...")
 
-        EvtName = dirname + "\\evt\\nativ\\Security.evtx"
-        if os.path.isfile(EvtName):
-            cmdexec = "copy " + EvtName
-            returned_value = os.system(cmdexec)
 
         print("[+] Generating Service Installed (7045) Messages...")
 
@@ -326,41 +374,47 @@ def main():
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
-
-        EvtName = dirname + "\\evt\\nativ\\System.evtx"
-        if os.path.isfile(EvtName):
-            cmdexec = "copy " + EvtName
-            returned_value = os.system(cmdexec)
+        else:
+            EvtName = dirname + "\\evt\\nativ\\System.evtx"
+            if os.path.isfile(EvtName):
+                cmdexec = "copy " + EvtName
+                returned_value = os.system(cmdexec)
+            else:
+                SrcEvtx = 0
+                print("[!] System Event Log Not Found...")
 
 
         ###########################################################################
         # Use Wevtutil to "export" the event log.  This has the effect of         #
         #  clearing any errors - It makes the Event Log more Stable.              #
         ###########################################################################
-        print("[+] Stabilizing Security Event Logs...")
-        cmdexec = "Wevtutil.exe epl Security.evtx Security1.evtx /lf:True"
-        returned_value = os.system(cmdexec)
+        if SrcEvtx == 1:
+            print("[+] Stabilizing Security Event Logs...")
+            cmdexec = "Wevtutil.exe epl Security.evtx Security1.evtx /lf:True"
+            returned_value = os.system(cmdexec)
 
-        print("[+] Stabilizing System Event Logs...")
-        cmdexec = "Wevtutil.exe epl System.evtx System1.evtx /lf:True"
-        returned_value = os.system(cmdexec)
+            print("[+] Stabilizing System Event Logs...")
+            cmdexec = "Wevtutil.exe epl System.evtx System1.evtx /lf:True"
+            returned_value = os.system(cmdexec)
 
 
-        ###########################################################################
-        # Parse the Events                                                        #
-        ###########################################################################
-        print("[+] Parsing Security Event Logs...")
-        cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
-        returned_value = os.system(cmdexec)
+            ###########################################################################
+            # Parse the Events                                                        #
+            ###########################################################################
+            print("[+] Parsing Security Event Logs...")
+            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
+            returned_value = os.system(cmdexec)
 
-        cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 5, '|') as LoginID from Security1.evtx where eventid=4625\" -i:evt -o:csv -q > SecEvt4625.csv"
-        returned_value = os.system(cmdexec)
+            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 5, '|') as LoginID from Security1.evtx where eventid=4625\" -i:evt -o:csv -q > SecEvt4625.csv"
+            returned_value = os.system(cmdexec)
 
-        cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(strings, 0, '|') AS ServiceName, EXTRACT_TOKEN(strings, 1, '|') AS ServicePath, EXTRACT_TOKEN(strings, 4, '|') AS ServiceUser FROM System1.evtx WHERE EventID = 7045\" -i:evt -o:csv -q > SysEvt7045.csv"
-        returned_value = os.system(cmdexec)
+            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(strings, 0, '|') AS ServiceName, EXTRACT_TOKEN(strings, 1, '|') AS ServicePath, EXTRACT_TOKEN(strings, 4, '|') AS ServiceUser FROM System1.evtx WHERE EventID = 7045\" -i:evt -o:csv -q > SysEvt7045.csv"
+            returned_value = os.system(cmdexec)
 
-        cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, SourceName, EventCategoryName, Message FROM Security1.evtx WHERE EventID = 4698\" -i:evt -o:csv -q > SecEvt4698.csv"
-        returned_value = os.system(cmdexec)
+            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, SourceName, EventCategoryName, Message FROM Security1.evtx WHERE EventID = 4698\" -i:evt -o:csv -q > SecEvt4698.csv"
+            returned_value = os.system(cmdexec)
+        else:
+            print("[!] Error Parsing Event Log Entries...")
     else:
         print("[+] Bypassing Event Log Entries...")
 
@@ -371,8 +425,14 @@ def main():
     ###########################################################################
     if RunAllAll == 1 or SrcRBin == 1:
         print("[+] Parsing Recycle Bin...")
-        cmdexec = dirleft + "\\SYS\\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
-        returned_value = os.system(cmdexec)
+
+        exeName = dirleft + "\\SYS\\RBCmd.exe"
+        if os.path.isfile(exeName):
+            cmdexec = dirleft + "\\SYS\\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
+            returned_value = os.system(cmdexec)
+        else:
+            print("[!] RBCmd Recycle Bin Parser Not Found...")
+            SrcRBin = 0
     else:
         print("[+] Bypass Parsing Recycle Bin...")
 
@@ -384,17 +444,29 @@ def main():
         print("[+] Parsing $MFT...")
         MFTFound = 0
 
-        MFTName = dirname + "\\RawData\\$MFT"
-        if os.path.isfile(MFTName):
-            cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName 
-            returned_value = os.system(cmdexec)
+        exeName = dirleft + "\\DSK\\MFTDump.exe"
+        if os.path.isfile(exeName):
+            MFTName = dirname + "\\RawData\\$MFT"
+            if os.path.isfile(MFTName):
+                cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName 
+                returned_value = os.system(cmdexec)
+                MFTFound = 1
 
-        MFTName = dirname + "\\RawData\\MFT-C"
-        if os.path.isfile(MFTName):
-            cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName
-            returned_value = os.system(cmdexec)
+            MFTName = dirname + "\\RawData\\MFT-C"
+            if os.path.isfile(MFTName):
+                cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName
+                returned_value = os.system(cmdexec)
+                MFTFound = 1
+
+            if MFTFound == 0:
+                print("[!] Error Parsing MFT (No MFT Found)...")
+                SrcMFT = 0
+        else:
+            print("[+] MFTDump Parser Not Found...")
+            SrcMFT = 0
     else:
         print("[+] Bypass Parsing $MFT...")
+
 
 
     ###########################################################################
@@ -507,97 +579,99 @@ def main():
     outfile.write("</Center></p>\n")
 
     # Write Basic Data
-    print("[+] Generating Basic Endpoint Information...")
+    if SrcSysTxt == 1:
+        print("[+] Generating Basic Endpoint Information...")
 
-    outfile.write("<input class=\"collapse\" id=\"id01\" type=\"checkbox\" checked>\n")
-    outfile.write("<label for=\"id01\">\n")
-    outfile.write("<H2>Basic Endpoint Information</H2>\n")
-    outfile.write("</label><div><hr>\n")
+        outfile.write("<input class=\"collapse\" id=\"id01\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id01\">\n")
+        outfile.write("<H2>Basic Endpoint Information</H2>\n")
+        outfile.write("</label><div><hr>\n")
 
-    filname = dirname + "\\info.dat"
-    dedname = "SysInfo.dat"
+        filname = dirname + "\\info.dat"
+        dedname = "SysInfo.dat"
 
-    if os.path.isfile(filname):
-        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed standard information about\n")
-        outfile.write("the endpoint. This information was extracted using the Microsoft SysInternals\n")
-        outfile.write("PSInfo.exe utility.  This utility provides you with basic information about\n")
-        outfile.write("What version of Windows is running on the endpoint, and how long the\n")
-        outfile.write("endpoint has been running (thus when it may have last last been rebooted\n")
-        outfile.write("and/or patched).</font></i></p>\n")
+        if os.path.isfile(filname):
+            outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed standard information about\n")
+            outfile.write("the endpoint. This information was extracted using the Microsoft SysInternals\n")
+            outfile.write("PSInfo.exe utility.  This utility provides you with basic information about\n")
+            outfile.write("What version of Windows is running on the endpoint, and how long the\n")
+            outfile.write("endpoint has been running (thus when it may have last last been rebooted\n")
+            outfile.write("and/or patched).</font></i></p>\n")
 
-        innfile = open(filname, encoding='utf8', errors="replace")
-        for innline in innfile:
-            if innline.startswith("System information "):
-                outfile.write("<b>" + innline.strip() + "</b><br>\n")
+            innfile = open(filname, encoding='utf8', errors="replace")
+            for innline in innfile:
+                if innline.startswith("System information "):
+                    outfile.write("<b>" + innline.strip() + "</b><br>\n")
 
-            elif innline.startswith("Uptime:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Uptime:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Kernel version:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Kernel version:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Product type:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Product type:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Product version:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Product version:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Service pack:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Service pack:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Kernel build number:"):
-                outfile.write(innline.strip() + "<br>")
+                elif innline.startswith("Kernel build number:"):
+                    outfile.write(innline.strip() + "<br>")
 
-            elif innline.startswith("Registered organization:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Registered organization:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Registered owner:"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("Registered owner:"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("Applications:"):
-                break
+                elif innline.startswith("Applications:"):
+                    break
 
-        innfile.close()
+            innfile.close()
 
-    elif os.path.isfile(dedname):
-        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed standard information about\n")
-        outfile.write("the endpoint. This information was extracted from the SYSTEM and SOFTWARE Registry Hives\n")
-        outfile.write("using RegRipper.</font></i></p>\n")
+        elif os.path.isfile(dedname):
+            outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed standard information about\n")
+            outfile.write("the endpoint. This information was extracted from the SYSTEM and SOFTWARE Registry Hives\n")
+            outfile.write("using RegRipper.</font></i></p>\n")
 
-        innfile = open(dedname, encoding='utf8', errors="replace")
-        for innline in innfile:
-            if innline.startswith("ComputerName "):
-                outfile.write("<b>" + innline.strip() + "</b><br>\n")
+            innfile = open(dedname, encoding='utf8', errors="replace")
+            for innline in innfile:
+                if innline.startswith("ComputerName "):
+                    outfile.write("<b>" + innline.strip() + "</b><br>\n")
 
-            elif innline.startswith("TCP/IP Hostname "):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("TCP/IP Hostname "):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("ProductName "):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("ProductName "):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("ReleaseID"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("ReleaseID"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("RegisteredOwner"):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("RegisteredOwner"):
+                    outfile.write(innline.strip() + "<br>\n")
 
-            elif innline.startswith("InstallDate "):
-                outfile.write(innline.strip() + "<br>\n")
+                elif innline.startswith("InstallDate "):
+                    outfile.write(innline.strip() + "<br>\n")
 
-        innfile.close()
+            innfile.close()
 
+        else:
+            outfile.write("<p><i><font color=firebrick>AChoir was not able to parse standard information about\n")
+            outfile.write("the endpoint.</font></i></p>\n")
+            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+
+        outfile.write("</div>\n")
+
+        ###########################################################################
+        # Clean Up.                                                               #
+        ###########################################################################
+        os.remove(dedname)
     else:
-        outfile.write("<p><i><font color=firebrick>AChoir was not able to parse standard information about\n")
-        outfile.write("the endpoint.</font></i></p>\n")
-        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
-
-    outfile.write("</div>\n")
-
-
-    ###########################################################################
-    # Clean Up.                                                               #
-    ###########################################################################
-    os.remove(dedname)
+        print("[!] Error Generating Basic Endpoint Information...")
 
 
     ###########################################################################
@@ -623,6 +697,7 @@ def main():
             outfile.write(innline.strip() + "<br>\n")
         innfile.close()
     else:
+        print("[!] Error Generating Logon Information...")
         outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
     outfile.write("</div>\n")
@@ -631,7 +706,7 @@ def main():
     ###########################################################################
     # Small Deleted Files ($MFT) - (Use Python CSV Reader Module)             #
     ###########################################################################
-    if RunAllAll == 1 or RunSmlDel == 1:
+    if (RunAllAll == 1 or RunSmlDel == 1) and SrcMFT == 1:
         print("[+] Generating Small Deleted Files $MFT Information...")
         filname = "MFTDump.csv"
 
@@ -692,7 +767,7 @@ def main():
     ###########################################################################
     # Medium Deleted Files ($MFT) - (Use Python CSV Reader Module)            #
     ###########################################################################
-    if RunAllAll == 1 or RunMedDel == 1:
+    if (RunAllAll == 1 or RunMedDel == 1) and SrcMFT == 1:
         print("[+] Generating Medium Deleted Files $MFT Information...")
         filname = "MFTDump.csv"
 
@@ -752,7 +827,7 @@ def main():
     ###########################################################################
     # Large Deleted Files ($MFT) - (Use Python CSV Reader Module)             #
     ###########################################################################
-    if RunAllAll == 1 or RunLrgDel == 1:
+    if (RunAllAll == 1 or RunLrgDel == 1) and SrcMFT == 1:
         print("[+] Generating Large Deleted Files $MFT Information...")
         filname = "MFTDump.csv"
 
@@ -813,7 +888,7 @@ def main():
     ###########################################################################
     # Large Active Files ($MFT) - (Use Python CSV Reader Module)              #
     ###########################################################################
-    if RunAllAll == 1 or RunLrgAct == 1:
+    if (RunAllAll == 1 or RunLrgAct == 1) and SrcMFT == 1:
         print("[+] Generating Large Active Files $MFT Information...")
         filname = "MFTDump.csv"
 
@@ -875,7 +950,7 @@ def main():
     ###########################################################################
     # Active Exe Files in Temp Directories - (Use Python CSV Reader Module)   #
     ###########################################################################
-    if RunAllAll == 1 or RunTmpAct == 1:
+    if (RunAllAll == 1 or RunTmpAct == 1) and SrcMFT == 1:
         print("[+] Generating Active Files in Temp Directories...")
         filname = "MFTDump.csv"
 
@@ -940,7 +1015,7 @@ def main():
     ###########################################################################
     # Deleted Exe Files in Temp Directories - (Use Python CSV Reader Module)  #
     ###########################################################################
-    if RunAllAll == 1 or RunTmpDel == 1:
+    if (RunAllAll == 1 or RunTmpDel == 1) and SrcMFT == 1:
         print("[+] Generating Deleted Files in Temp Directories...")
         filname = "MFTDump.csv"
 
@@ -1013,7 +1088,7 @@ def main():
     ###########################################################################
     # Write Success RDP Logins (Use Python CSV Reader Module)                 #
     ###########################################################################
-    if RunAllAll == 1 or RunSucRDP == 1:
+    if (RunAllAll == 1 or RunSucRDP == 1) and SrcEvtx == 1:
         print("[+] Generating Sucessful RDP Login Information...")
         outfile.write("<a name=RDP></a>\n")
         outfile.write("<input class=\"collapse\" id=\"id09\" type=\"checkbox\" checked>\n")
@@ -1053,14 +1128,18 @@ def main():
                         ipsfileall.write(csvrow[5] + "\n")
 
                         reccount = reccount + 1
+
             outfile.write("</table>\n")
             os.remove(filname)
 
             if reccount < 2:
+                print("[!] No RDP Logins Found...")
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
         else:
+            print("[!] No RDP Login Information Found...")
             outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
@@ -1073,7 +1152,7 @@ def main():
     ###########################################################################
     # Write Failed Logins (Use Python CSV Reader Module)                      #
     ###########################################################################
-    if RunAllAll == 1 or RunFaiLgn == 1:
+    if (RunAllAll == 1 or RunFaiLgn == 1) and SrcEvtx == 1:
         print("[+] Generating Failed Logins Information...")
         outfile.write("<a name=Logins></a>\n")
         outfile.write("<input class=\"collapse\" id=\"id10\" type=\"checkbox\" checked>\n")
@@ -1163,9 +1242,9 @@ def main():
 
         reccount = 0
         filname = dirname + "\\brw\\BrowseHist.csv"
-        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
         if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1192,7 +1271,8 @@ def main():
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing File History access to Archive Files (No Input Data) ...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1221,9 +1301,9 @@ def main():
 
         reccount = 0
         filname = dirname + "\\brw\\BrowseHist.csv"
-        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
         if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1242,14 +1322,17 @@ def main():
                             outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing File History (No Input Data) ...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1269,11 +1352,18 @@ def main():
         outfile.write("<H2>Internet Browse History Information</H2>\n")
         outfile.write("</label><div><hr>\n")
 
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
+        outfile.write("Web Browsing History. Web Browsing History can show Suspicious URLs that were \n")
+        outfile.write("visited on this machine.  Pay special attention to the URL strings. \n")
+        outfile.write("This can also be completely normal activity.  Review the URLs for anything \n")
+        outfile.write("that appears to be suspicious, especially unusual URL string that might \n")
+        outfile.write("indicate malicious C2 activity or strings that may indicate access to Phishing sites.</font></i></p>\n")
+
         reccount = 0
         filname = dirname + "\\brw\\BrowseHist.csv"
-        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
         if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1297,14 +1387,17 @@ def main():
                                 domfileall.write(url_split[2] + "\n")
 
                             reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
-                outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+               outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing Web Browsing History (No Input Data) ...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1316,7 +1409,7 @@ def main():
     ###########################################################################
     # Write Prefetch Data (Use Python CSV Reader Module)                      #
     ###########################################################################
-    if RunAllAll == 1 or RunPrfHst == 1:
+    if (RunAllAll == 1 or RunPrfHst == 1) and SrcPrf == 1:
         print("[+] Generating Prefetch Information...")
         outfile.write("<a name=Prefetch></a>\n")
         outfile.write("<input class=\"collapse\" id=\"id14\" type=\"checkbox\" checked>\n")
@@ -1364,7 +1457,8 @@ def main():
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing Prefetch Information (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1398,6 +1492,7 @@ def main():
         filname = dirname + "\\sys\\CPorts.csv"
 
         if os.path.isfile(filname):
+            print("[+] Reading CPorts Output File...")
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
             outfile.write("<tr><th width=13%> Process </th>\n")
             outfile.write("<th width=5%> Prot. </th>\n")
@@ -1430,14 +1525,80 @@ def main():
             outfile.write("</table>\n")
 
             if reccount < 2:
-                outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                outfile.write("<p><b><font color = red> No CPortsData Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing IP Connections Information (No CPorts Input Data) ...")
+            outfile.write("<p><b><font color = red> No CPorts Input Data Found! </font></b></p>\n")
+
+
+        ###########################################################################
+        # This section looks for the netstat-abno.dat file and reformats it.      #
+        ###########################################################################
+        reccount = 0
+        filname = dirname + "\\sys\\netstat-abno.dat"
+
+        if os.path.isfile(filname):
+            print("[+] Reading netstat -abno Output File...")
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<th width=5%> Prot. </th>\n")
+            outfile.write("<th width=15%> Local IP</th>\n")
+            outfile.write("<th width=5%> Local Port </th>\n")
+            outfile.write("<th width=15%> Remote IP </th>\n")
+            outfile.write("<th width=5%> Remote Port </th>\n")
+            outfile.write("<th width=10%> State </th>\n")
+            outfile.write("<th width=5%> PID </th>\n")
+            outfile.write("<th width=20%> Component </th>\n")
+            outfile.write("<th width=20%> Process </th></tr>\n")
+
+            innfile = open(filname, encoding='utf8', errors="replace")
+            for innline in innfile:
+                if innline.startswith("  TCP ") or innline.startswith("  UDP "):
+                    ConnSplit = innline.split()
+                    if len(ConnSplit) == 5:
+                        if reccount > 0:
+                            outfile.write("</tr>\n")
+
+                        LocSplit = ConnSplit[1].rsplit(':',1)
+                        RmtSplit = ConnSplit[2].rsplit(':',1)
+
+                        outfile.write("<tr><td width=5%>" + ConnSplit[0] + "</td>\n")
+                        outfile.write("<td width=15%>" + LocSplit[0] + "</td>\n")
+                        outfile.write("<td width=5%>" + LocSplit[1] + "</td>\n")
+                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + RmtSplit[0] + ">" + RmtSplit[0] + "</a> </td>\n")
+                        outfile.write("<td width=5%>" + RmtSplit[1] + "</td>\n")
+                        outfile.write("<td width=10%>" + ConnSplit[3] +  "</td>\n")
+                        outfile.write("<td width=5%>" + ConnSplit[4] +  "</td>\n")
+                        reccount = reccount + 1
+
+                    elif len(ConnSplit) == 4:
+                        if reccount > 0:
+                            outfile.write("</tr>\n")
+
+                        LocSplit = ConnSplit[1].rsplit(':',1)
+                        RmtSplit = ConnSplit[2].rsplit(':',1)
+
+                        outfile.write("</tr><tr><td width=5%>" + ConnSplit[0] + "</td>\n")
+                        outfile.write("<td width=15%>" + LocSplit[0] + "</td>\n")
+                        outfile.write("<td width=5%>" + LocSplit[1] + "</td>\n")
+                        outfile.write("<td width=15%>" + RmtSplit[0] + "</td>\n")
+                        outfile.write("<td width=5%>" + RmtSplit[1] + "</td>\n")
+                        outfile.write("<td width=10%> - </td>\n")
+                        outfile.write("<td width=5%>" + ConnSplit[3] +  "</td>\n")
+                        reccount = reccount + 1
+                else:
+                    if reccount > 0:
+                        outfile.write("<td width=20%>" + innline +  "</td>\n")
+
+            outfile.write("</tr></table>\n")
+            innfile.close()
+
+        else:
+            print("[!] Bypassing IP Connections Information (No netstat-abno Input Data) ...")
+            outfile.write("<p><b><font color = red> No netstat-abno Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
-
 
     else:
         print("[+] Bypassing IP Connections Information...")
@@ -1488,7 +1649,8 @@ def main():
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing User Assist Information (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1539,6 +1701,7 @@ def main():
                     outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         if filcount < 2:
+            print("[!] No User Assist Information (No Input Data)...")
             outfile.write("<p><b><font color = red> No User Assist (NTUSER.DAT) Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
@@ -1569,18 +1732,18 @@ def main():
         outfile.write("Focus on both the file names, and where the programs are located to determine if they \n")
         outfile.write("look suspicious.</font></i></p>\n")
 
-        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-        outfile.write("<tr><th width=10%> Time </th>\n")
-        outfile.write("<th width=30%> Entry Location </th>\n")
-        outfile.write("<th width=10%> Entry </th>\n")
-        outfile.write("<th width=30%> Image Path <hr> Launch String</th>\n")
-        outfile.write("<th width=15%> MD5 </th>\n")
-        outfile.write("<th width=5%> Enabled </th></tr>\n")
-
         reccount = 0
         filname = dirname + "\\arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<tr><th width=10%> Time </th>\n")
+            outfile.write("<th width=30%> Entry Location </th>\n")
+            outfile.write("<th width=10%> Entry </th>\n")
+            outfile.write("<th width=30%> Image Path <hr> Launch String</th>\n")
+            outfile.write("<th width=15%> MD5 </th>\n")
+            outfile.write("<th width=5%> Enabled </th></tr>\n")
+
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1600,12 +1763,14 @@ def main():
             outfile.write("</table>\n")
 
             if reccount < 2:
+                print("[!] No Autoruns Information Found...")
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing AutoRuns Information (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1628,12 +1793,11 @@ def main():
         outfile.write("Focus on both the file names, and where the programs are located to determine if they \n")
         outfile.write("look suspicious.</font></i></p>\n")
 
-        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-
         reccount = 0
         filname = dirname + "\\arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1659,15 +1823,18 @@ def main():
                         outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
 
                         reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 2:
+                print("[!] No Autoruns Information Found...")
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] Bypassing AutoRuns Information (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1679,7 +1846,7 @@ def main():
     ###########################################################################
     # Write 7045 Installed Services Log Entries                               #
     ###########################################################################
-    if RunAllAll == 1 or RunServic == 1:
+    if (RunAllAll == 1 or RunServic == 1) and SrcEvtx ==1:
         print("[+] Generating 7045 Installed Services Logs...")
         outfile.write("<a name=InstSvc></a>\n")
         outfile.write("<input class=\"collapse\" id=\"id20\" type=\"checkbox\" checked>\n")
@@ -1715,15 +1882,18 @@ def main():
                         outfile.write("<" + tdtr + " width=10%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
 
                         reccount = reccount + 1
+
             outfile.write("</table>\n")
             os.remove(filname)
 
             if reccount < 2:
+                print("[!] No  Installed Services Found...")
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] No Installed Services Found (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1782,7 +1952,8 @@ def main():
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] No New Scheduled Tasks Found (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1890,7 +2061,8 @@ def main():
             outfile.write("</table>\n")
             innfile.close()
         else:
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            print("[!] No DNS Cache Data  Found (No Input Data)...")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
@@ -1902,7 +2074,7 @@ def main():
     ###########################################################################
     # Write Out Recycle Bin data ($I Files)                                   #
     ###########################################################################
-    if RunAllAll == 1 or RunRcyBin == 1:
+    if (RunAllAll == 1 or RunRcyBin == 1) and SrcRBin == 1:
         print("[+] Generating Recycle Bin ($Recycle.Bin) Information...")
 
         outfile.write("<a name=RBin></a>\n")
@@ -1953,9 +2125,10 @@ def main():
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         else:
+            print("[!] No Recycle Bin Data Found (No Input Data)...")
             outfile.write("<p><i><font color=firebrick>AChoir was not able to parse\n")
             outfile.write("the endpoint Recycle Bin information.</font></i></p>\n")
-            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
