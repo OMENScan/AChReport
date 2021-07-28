@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v0.96 (Python 3.x)                                    #
+# Version: beta v0.97 (Python 3.x)                                    #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
@@ -34,8 +34,8 @@
 #   v0.94 - Minor modifications to work with AChoirX                  #
 #   v0.95 - Add Configuration File (Select Report Sections to Run)    #
 #   v0.96 - Add some error correction if Source files are missing     #
+#   v0.97 - Add Regripper AmCache Parser                              #
 ####################################################################### 
-
 import os
 import sys
 import csv
@@ -52,7 +52,7 @@ args = parser.parse_args()
 
 
 ###########################################################################
-# Where are the Artifacts, What id the Output File Name
+# Where are the Artifacts, What is the Output File Name
 ###########################################################################
 cfgname = str(args.cfgname)
 dirname = str(args.dirname)
@@ -90,46 +90,55 @@ def main():
     else:
         print("[*] Copying Regripper Plugins From AChoir Install...")
         returned_value = os.system("mkdir plugins")
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\compname.pl .\\plugins\compname.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\compname.pl .\\plugins\\compname.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\shellfolders.pl .\\plugins\shellfolders.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\shellfolders.pl .\\plugins\\shellfolders.pl"
         returned_value = os.system(cmdexec)
         cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\userassist.pl .\\plugins\\userassist.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\source_os.pl .\\plugins\source_os.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\source_os.pl .\\plugins\\source_os.pl"
         returned_value = os.system(cmdexec)
-        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\winver.pl .\\plugins\winver.pl"
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\winver.pl .\\plugins\\winver.pl"
+        returned_value = os.system(cmdexec)
+        cmdexec = "Copy " + dirleft + "\\RRV\\RegRipper3.0-master\\plugins\\amcache.pl .\\plugins\\amcache.pl"
         returned_value = os.system(cmdexec)
 
+
     GotDepend = 1
-    if os.path.isfile(".\plugins\compname.pl"):
+    if os.path.isfile(".\\plugins\\compname.pl"):
         print("[+] Regripper Plugin Found: compname.pl")
     else:
         print("[!] Regripper Plugin NOT Found: compname.pl")
         GotDepend = 0
 
-    if os.path.isfile(".\plugins\shellfolders.pl"):
+    if os.path.isfile(".\\plugins\\shellfolders.pl"):
         print("[+] Regripper Plugin Found: shellfolders.pl")
     else:
         print("[!] Regripper Plugin NOT Found: shellfolders.pl")
         GotDepend = 0
 
-    if os.path.isfile(".\plugins\\userassist.pl"):
+    if os.path.isfile(".\\plugins\\userassist.pl"):
         print("[+] Regripper Plugin Found: userassist.pl")
     else:
         print("[!] Regripper Plugin NOT Found: userassist.pl")
         GotDepend = 0
 
-    if os.path.isfile(".\plugins\source_os.pl"):
+    if os.path.isfile(".\\plugins\\source_os.pl"):
         print("[+] Regripper Plugin Found: source_os.pl")
     else:
         print("[!] Regripper Plugin NOT Found: source_os.pl")
         GotDepend = 0
 
-    if os.path.isfile(".\plugins\winver.pl"):
+    if os.path.isfile(".\\plugins\\winver.pl"):
         print("[+] Regripper Plugin Found: winver.pl")
     else:
         print("[!] Regripper Plugin NOT Found: winver.pl")
+        GotDepend = 0
+
+    if os.path.isfile(".\\plugins\\amcache.pl"):
+        print("[+] Regripper Plugin Found: amcache.pl")
+    else:
+        print("[!] Regripper Plugin NOT Found: amcache.pl")
         GotDepend = 0
 
     if os.path.isfile("logparser.exe"):
@@ -161,8 +170,8 @@ def main():
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
-    RunIndHsh = RunIndDom = 0
-    SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = 0
+    RunIndHsh = RunIndDom = RunAmCach = 0
+    SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = SrcAmCTxt = 0
 
     print("[+] Checking For Config File...")
     if os.path.isfile(cfgname):
@@ -229,6 +238,10 @@ def main():
             elif cfgline.startswith("Run:UserAssist"):
                 SrcNTUsr = 1
                 RunUsrAst = 1
+
+            elif cfgline.startswith("Run:AmCache"):
+                SrcAmCach = 1
+                RunAmCach = 1
 
             elif cfgline.startswith("Run:AutoRuns"):
                 RunAutoRn = 1
@@ -307,6 +320,25 @@ def main():
     else:
         print("[!] SYSTEM Registry Not Found...")
         SrcSysReg = 0
+
+
+    print("[+] Generating AmCache Information from Registry...")
+    regName = dirname + "\Reg\AmCache.hve"
+    if os.path.isfile(regName):
+        SrcAmCach = 1
+
+        exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
+        if os.path.isfile(exeName):
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p amcache -r " + dirname + "\Reg\AmCache.hve > AmCache.dat"
+            returned_value = os.system(cmdexec)
+
+            SrcAmCTxt = 1
+        else:
+            print("[!] RegRipper Not Found...")
+            SrcAmCach = 0
+    else:
+        print("[!] AmCache Registry Not Found...")
+        SrcAmCach = 0
 
 
     if RunAllAll == 1 or SrcPrf == 1:
@@ -534,7 +566,7 @@ def main():
     outfile.write("<tr><td width=6%> <a href=#Top>Top</a> </td>\n")
 
     if RunAllAll == 1 or RunSmlDel == 1:
-        outfile.write("<td width=7%> <a href=#Deleted>Deleted</a> </td>\n")
+        outfile.write("<td width=7%> <a href=#Deleted>Deletd</a> </td>\n")
 
     if RunAllAll == 1 or RunLrgAct == 1:
         outfile.write("<td width=7%> <a href=#Active>Active</a> </td>\n")
@@ -543,34 +575,37 @@ def main():
         outfile.write("<td width=6%> <a href=#ExeTemp>Temp</a> </td>\n")
 
     if RunAllAll == 1 or RunFaiLgn == 1:
-        outfile.write("<td width=8%> <a href=#Logins>FailLogn</a> </th>\n")
+        outfile.write("<td width=7%> <a href=#Logins>FailLogn</a> </th>\n")
 
     if RunAllAll == 1 or RunSucRDP == 1:
-        outfile.write("<td width=7%> <a href=#RDP>RDP</a> </th>\n")
+        outfile.write("<td width=6%> <a href=#RDP>RDP</a> </th>\n")
 
     if RunAllAll == 1 or RunFBrArc == 1:
-        outfile.write("<td width=7%> <a href=#Browser>Browser</a> </td>\n")
+        outfile.write("<td width=6%> <a href=#Browser>Brwsr</a> </td>\n")
 
     if RunAllAll == 1 or RunPrfHst == 1:
-        outfile.write("<td width=8%> <a href=#Prefetch>Prefetch</a> </td>\n")
+        outfile.write("<td width=7%> <a href=#Prefetch>Prefetch</a> </td>\n")
+
+    if RunAllAll == 1 or RunAmCach == 1:
+        outfile.write("<td width=5%> <a href=#AmCache>AmC</a> </td>\n")
 
     if RunAllAll == 1 or RunUsrAst == 1:
-        outfile.write("<td width=8%> <a href=#UserAssist>UsrAssist</a> </td>\n")
+        outfile.write("<td width=7%> <a href=#UserAssist>UsrAsst</a> </td>\n")
 
     if RunAllAll == 1 or RunIPCons == 1:
         outfile.write("<td width=6%> <a href=#IPConn>IPCon</a> </td>\n")
 
     if RunAllAll == 1 or RunDNSInf == 1:
-        outfile.write("<td width=6%> <a href=#DNSCache> DNS </a> </td>\n")
+        outfile.write("<td width=5%> <a href=#DNSCache>DNS</a> </td>\n")
 
     if RunAllAll == 1 or RunAutoRn == 1:
         outfile.write("<td width=7%> <a href=#AutoRun>AutoRun</a> </td>\n")
 
     if RunAllAll == 1 or RunServic == 1:
-        outfile.write("<td width=6%> <a href=#InstSVC>EVTx</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#InstSVC>EVTx</a> </td>\n")
 
     if RunAllAll == 1 or RunRcyBin == 1:
-        outfile.write("<td width=6%> <a href=#RBin>RBin</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#RBin>RBin</a> </td>\n")
 
     if RunAllAll == 1 or RunIndIPs == 1:
         outfile.write("<td width=5%> <a href=#BulkIPs>IOC</a> </td></tr>\n")
@@ -1603,6 +1638,70 @@ def main():
     else:
         print("[+] Bypassing IP Connections Information...")
 
+
+    ###########################################################################
+    # Write AmCache Entries                                                   #
+    ###########################################################################
+    if RunAllAll == 1 or RunAmCach == 1:
+        print("[+] Generating AmCache Information...")
+        outfile.write("<a name=AmCache></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id27\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id27\">\n")
+        outfile.write("<H2>AmCache Hive Information</H2>\n")
+        outfile.write("</label><div><hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
+        outfile.write("the Windows AmCache Registry Hive. The AmCache Hive keys store information about \n")
+        outfile.write("the execution of Windows programs. These files are forensically \n")
+        outfile.write("interesting because they indicate that a program was excuted by a user, and the last \n")
+        outfile.write("time it was executed.  This is normal behavior and does not in-itself indicate hostile behavior. \n")
+        outfile.write("However, a quick look at the AmCache Hive is a good way to see if anything executed \n")
+        outfile.write("appears to be suspicious.  Review this section to see if anything looks out of the \n")
+        outfile.write("ordinary, or appears to be malicious.</font></i></p>\n")
+
+        reccount = 0
+        filname = "AmCache.dat"
+
+        if os.path.isfile(filname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<tr><td style=\"text-align: left\">\n")
+
+            innfile = open(filname, encoding='utf8', errors="replace")
+            for innline in innfile:
+                reccount = reccount + 1
+
+                strIndex = innline.find("LastWrite")
+                if strIndex > 0:
+                    outfile.write("</td></tr><tr><td style=\"text-align: left\">\n")
+                    outfile.write("<b>Name: </b>" + innline[0:strIndex] + "<br>\n")
+                    outfile.write("<b>Last: </b>" + innline[strIndex+10:] + "<br>\n")
+                elif innline.startswith("Hash: "):
+                    if len(innline) > 32:
+                        outfile.write("<b>Hash: </b><A href=https://www.virustotal.com/#/search/" + innline[6:].strip() + ">" + innline[6:].strip() + "</a><br>\n")
+                    else:
+                        outfile.write("<b>Hash: </b>Unknown<br>\n")
+                else:
+                    outfile.write(innline.strip() + "<br>\n")
+
+            outfile.write("</td></tr></table>\n")
+            innfile.close()
+            os.remove(filname)
+
+            if reccount < 1:
+                outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            else:
+                outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
+        else:
+            print("[!] No AmCache Data Found (No Input Data)...")
+            outfile.write("<p><i><font color=firebrick>AChoir was not able to parse\n")
+            outfile.write("the endpoint AmCache Hive.</font></i></p>\n")
+            outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
+
+        outfile.write("</div>\n")
+
+    else:
+        print("[+] Bypassing AmCache Hive (AmCache.hve) Information...")
 
 
     ###########################################################################
