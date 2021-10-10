@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v0.97 (Python 3.x)                                    #
+# Version: beta v0.98 (Python 3.x)                                    #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
@@ -35,6 +35,7 @@
 #   v0.95 - Add Configuration File (Select Report Sections to Run)    #
 #   v0.96 - Add some error correction if Source files are missing     #
 #   v0.97 - Add Regripper AmCache Parser                              #
+#   v0.98 - Integrate F-Secure Countercept ChainSaw with AChReport    #
 ####################################################################### 
 import os
 import sys
@@ -42,6 +43,10 @@ import csv
 import time 
 import argparse
 import ctypes
+import requests
+import glob
+import shutil
+from zipfile import ZipFile
 
 parser = argparse.ArgumentParser(description="Format AChoir Output into a Report")
 parser.add_argument("-d", dest="dirname", 
@@ -170,7 +175,7 @@ def main():
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
-    RunIndHsh = RunIndDom = RunAmCach = 0
+    RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = 0
     SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = SrcAmCTxt = 0
 
     print("[+] Checking For Config File...")
@@ -260,6 +265,10 @@ def main():
             elif cfgline.startswith("Run:RecycleBin"):
                 SrcRBin = 1
                 RunRcyBin = 1
+
+            elif cfgline.startswith("Run:Chainsaw"):
+                SrcEvtx = 1
+                RunChnSaw = 1
 
             elif cfgline.startswith("Run:IndicatorsIP"):
                 RunIndIPs = 1
@@ -566,34 +575,34 @@ def main():
     outfile.write("<tr><td width=6%> <a href=#Top>Top</a> </td>\n")
 
     if RunAllAll == 1 or RunSmlDel == 1:
-        outfile.write("<td width=7%> <a href=#Deleted>Deletd</a> </td>\n")
+        outfile.write("<td width=6%> <a href=#Deleted>Deltd</a> </td>\n")
 
     if RunAllAll == 1 or RunLrgAct == 1:
-        outfile.write("<td width=7%> <a href=#Active>Active</a> </td>\n")
+        outfile.write("<td width=6%> <a href=#Active>Activ</a> </td>\n")
 
     if RunAllAll == 1 or RunTmpAct == 1:
-        outfile.write("<td width=6%> <a href=#ExeTemp>Temp</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#ExeTemp>Temp</a> </td>\n")
 
     if RunAllAll == 1 or RunFaiLgn == 1:
-        outfile.write("<td width=7%> <a href=#Logins>FailLogn</a> </th>\n")
+        outfile.write("<td width=7%> <a href=#Logins>FailLgn</a> </th>\n")
 
     if RunAllAll == 1 or RunSucRDP == 1:
-        outfile.write("<td width=6%> <a href=#RDP>RDP</a> </th>\n")
+        outfile.write("<td width=5%> <a href=#RDP>RDP</a> </th>\n")
 
     if RunAllAll == 1 or RunFBrArc == 1:
         outfile.write("<td width=6%> <a href=#Browser>Brwsr</a> </td>\n")
 
     if RunAllAll == 1 or RunPrfHst == 1:
-        outfile.write("<td width=7%> <a href=#Prefetch>Prefetch</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#Prefetch>Pref</a> </td>\n")
 
     if RunAllAll == 1 or RunAmCach == 1:
-        outfile.write("<td width=5%> <a href=#AmCache>AmC</a> </td>\n")
+        outfile.write("<td width=6%> <a href=#AmCache>AmCsh</a> </td>\n")
 
     if RunAllAll == 1 or RunUsrAst == 1:
         outfile.write("<td width=7%> <a href=#UserAssist>UsrAsst</a> </td>\n")
 
     if RunAllAll == 1 or RunIPCons == 1:
-        outfile.write("<td width=6%> <a href=#IPConn>IPCon</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#IPConn>IPCon</a> </td>\n")
 
     if RunAllAll == 1 or RunDNSInf == 1:
         outfile.write("<td width=5%> <a href=#DNSCache>DNS</a> </td>\n")
@@ -606,6 +615,9 @@ def main():
 
     if RunAllAll == 1 or RunRcyBin == 1:
         outfile.write("<td width=5%> <a href=#RBin>RBin</a> </td>\n")
+
+    if RunAllAll == 1 or RunChnSaw == 1:
+        outfile.write("<td width=5%> <a href=#ChainSaw>ChSw</a> </td>\n")
 
     if RunAllAll == 1 or RunIndIPs == 1:
         outfile.write("<td width=5%> <a href=#BulkIPs>IOC</a> </td></tr>\n")
@@ -1862,13 +1874,13 @@ def main():
             outfile.write("</table>\n")
 
             if reccount < 2:
-                print("[!] No Autoruns Information Found...")
+                print("[!] No Run or RunOnce Information Found...")
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         else:
-            print("[!] Bypassing AutoRuns Information (No Input Data)...")
+            print("[!] Bypassing AutoRuns Run/RunOnce Information (No Input Data)...")
             outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
@@ -2234,6 +2246,384 @@ def main():
     else:
         print("[+] Bypassing Recycle Bin ($Recycle.Bin) Information...")
 
+
+    ###########################################################################
+    # Run Countercept Chainsaw Program against all .EVTX Files                #
+    # [+] audit_log_was_cleared.csv                                           #
+    # [+] system_log_was_cleared.csv                                          #
+    # [+] suspicious_process_creation.csv                                     #
+    # [+] suspicious_registry_event.csv                                       #
+    # [+] suspicious_file_creation.csv                                        #
+    # [+] user_added_to_interesting_group.csv                                 #
+    # [+] windows_defender_detections.csv                                     #
+    # [+] 4624_logins.csv                                                     #
+    ###########################################################################
+    if (RunAllAll == 1 or RunChnSaw == 1) and SrcEvtx == 1:
+        print("[+] Checking for F-Secure Countercept Chainsaw...")
+
+        if os.path.isfile(".\\chainsaw\\chainsaw.exe") == False:
+            print("[?] Chainsaw executable not found...  Would you like to Download F-Secure Countercept...")
+            YesOrNo = input("[?] Y/N > ")
+
+            if YesOrNo.upper() == "Y":
+                print("[+] Downloading F-Secure Countercept Chainsaw From Github...")
+                ChSwUrl = 'https://github.com/countercept/chainsaw/releases/download/v1.0.2/chainsaw_x86_64-pc-windows-msvc.zip'
+                ChSwReq = requests.get(ChSwUrl, allow_redirects=True)
+                open('Chainsaw.zip', 'wb').write(ChSwReq.content)
+
+                print("[+] Unzipping F-Secure Countercept Chainsaw...")
+                with ZipFile('Chainsaw.zip', 'r') as zipObj:
+                    # Extract all the contents of zip file in current directory
+                    zipObj.extractall()
+            else:
+                print("[!] Chainsaw Download Bypassed...")
+
+
+        if os.path.isfile(".\\chainsaw\\chainsaw.exe"):
+            print("[+] Chainsaw executable found")
+            print("[+] Running F-Secure Countercept Chainsaw against all Event Logs...")
+
+            ChSwSubDir = ""
+
+            EvtName = dirname + "\\evt\\sys32\\"
+            cmdexec = ".\\chainsaw\\chainsaw.exe hunt --csv --full --lateral-all --mapping .\\chainsaw\\mapping_files\\sigma-mapping.yml --rules .\\chainsaw\\sigma_rules " + EvtName
+            returned_value = os.system(cmdexec)
+
+            outfile.write("<a name=ChainSaw></a>\n")
+            outfile.write("<input class=\"collapse\" id=\"id28\" type=\"checkbox\" checked>\n")
+            outfile.write("<label for=\"id28\">\n")
+            outfile.write("<H2>ChainSaw Output</H2>\n")
+            outfile.write("</label><div><hr>\n")
+
+            outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed F-Secure Countercept\n")
+            outfile.write("Chainsaw Data.  Chainsaw provides a powerful ‘first-response’ capability to quickly\n")
+            outfile.write("identify threats within Windows event logs. It offers a generic and fast method of\n")
+            outfile.write("searching through event logs for keywords, and by identifying threats using built-in\n")
+            outfile.write("detection logic and via support for Sigma detection rules.</font></i></p>\n")
+
+            ###########################################################################
+            # Chainsaw: Audit Log Cleared                                             #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*security_audit_log_was_cleared.csv', recursive=True):
+                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Security Audit Event Logs Cleared:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 3:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=25%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: System Log Cleared                                             #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*system_log_was_cleared.csv', recursive=True):
+                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>System Audit Event Logs Cleared:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 3:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=25%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: Suspicious Process Creation                                   #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*suspicious_process_creation.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Suspicious Process Creation:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=10%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=40%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: Suspicious Registry Event                                     #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*suspicious_registry_event.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Suspicious Registry Event:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: Suspicious File Creation                                      #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*suspicious_file_creation.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Suspicious File Creation:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: User Added to Interesting Group                               #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*user_added_to_interesting_group.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>User Added to Interesting Group:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: Windows Defender Detections                                   #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*windows_defender_detections.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Windows Defender Detections:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=35%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+            ###########################################################################
+            # Chainsaw: 4624 Logins                                                   #
+            ###########################################################################
+            for ChName in glob.glob('.\\**\*4624_logins.csv', recursive=True):
+                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>Windows 4624 Logins:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 5:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+                outfile.write("</table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+            outfile.write("</div>\n")
+
+
+            ###########################################################################
+            # Chainsaw: See if we have any Unprocessed Files                          #
+            ###########################################################################
+            reccount = 0
+            ChSwLeftOvers = ChSwSubDir + "\\**\*.csv"
+
+            for ChName in glob.glob('.\\**\*user_added_to_interesting_group.csv', recursive=True):
+                print("[!] Unprocessed F-Secure Countercept Chainsaw File: " + ChName)
+                reccount = reccount + 1
+
+            if reccount == 0:
+                print("[+] No Unprocessed Chainsaw Files. Deleting ChainSaw Directory: " + ChSwSubDir)
+                shutil.rmtree(ChSwSubDir)
+            else:
+                print("[+] There are Unprocessed Chainsaw Files. So I WILL NOT Delete the ChainSaw Directory")
+
+        else:
+            print("[!] Chainsaw Executable not found!  Bypassing Chainsaw Processing...")
+
+    else:
+        print("[!] Bypassing Chainsaw Processing...")
 
 
     ###########################################################################
