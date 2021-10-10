@@ -27,6 +27,7 @@ IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires 
 4. AChReport requires a few additional components including: MS LogParser in the same directory as AChReport.py, and some RegRipper plugins in a subdirectory called "plugins"
 5. AChReport is meant to run on Windows
 6. AChReport now supports AChoir, and the Windows collections of AChoirX
+7. As of v0.98 AChReport can now download and integrate F-secure Countecept Chainsaw
 
 RegRipper can be found at:
  https://github.com/keydet89/RegRipper2.8
@@ -34,6 +35,8 @@ RegRipper can be found at:
 Microsoft LogParser can be found at:
  https://www.microsoft.com/en-us/download/details.aspx?id=24659
 
+F-Secure Countercept Chainsaw can be found at:
+ https://github.com/countercept/chainsaw
 
 To run AChReport use the -d switch to point to the AChoir extract directory.  For Example:
 
