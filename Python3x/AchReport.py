@@ -36,6 +36,7 @@
 #   v0.96 - Add some error correction if Source files are missing     #
 #   v0.97 - Add Regripper AmCache Parser                              #
 #   v0.98 - Integrate F-Secure Countercept ChainSaw with AChReport    #
+#   v0.99 - Pre-Cleanup Any Leftover Files                            #
 ####################################################################### 
 import os
 import sys
@@ -283,6 +284,99 @@ def main():
         print("[!] Config File Not Found (" + cfgname + "), Default Setting Configured.")
         RunAllAll = 1
 
+
+    ###########################################################################
+    # Pre-Cleanup to delete any Leftover temp files from failed runs
+    ###########################################################################
+    print("[+] Now Deleting old report temp files...")
+
+    if os.path.isfile("Security.evtx"):
+        os.remove("Security.evtx")
+    if os.path.isfile("Security1.evtx"):
+        os.remove("Security1.evtx")
+    if os.path.isfile("System.evtx"):
+        os.remove("System.evtx")
+    if os.path.isfile("System1.evtx"):
+        os.remove("System1.evtx")
+    if os.path.isfile("SysInfo.dat"):
+        os.remove("SysInfo.dat")
+    if os.path.isfile("MFTDump.csv"):
+        os.remove("MFTDump.csv")
+    if os.path.isfile("MFTDump.log"):
+        os.remove("MFTDump.log")
+    if os.path.isfile("RDPGood.csv"):
+        os.remove("RDPGood.csv")
+    if os.path.isfile("SecEvt4625.csv"):
+        os.remove("SecEvt4625.csv")
+    if os.path.isfile("WinPrefetchView.csv"):
+        os.remove("WinPrefetchView.csv")
+    if os.path.isfile("AmCache.dat"):
+        os.remove("AmCache.dat")
+    if os.path.isfile("SysEvt7045.csv"):
+        os.remove("SysEvt7045.csv")
+    if os.path.isfile("SecEvt4698.csv"):
+        os.remove("SecEvt4698.csv")
+    if os.path.isfile("RBin.dat"):
+        os.remove("RBin.dat")
+
+    for curfile in os.listdir("."):
+        if curfile.startswith("shlasst."):
+            os.remove(curfile)
+
+    ChSwSubDir = ""
+    for ChName in glob.glob('.\\**\*security_audit_log_was_cleared.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*system_log_was_cleared.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*suspicious_process_creation.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*suspicious_registry_event.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*suspicious_file_creation.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*user_added_to_interesting_group.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*windows_defender_detections.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    for ChName in glob.glob('.\\**\*4624_logins.csv', recursive=True):
+        os.remove(ChName)
+        if ChSwSubDir == "":
+            Path_File = os.path.split(ChName)
+            ChSwSubDir = Path_File[0]
+
+    if ChSwSubDir != "":
+        ChSwLeftOvers = ChSwSubDir + "\\**\*.csv"
+        for ChName in glob.glob(ChSwLeftOvers, recursive=True):
+            os.remove(ChName)
+        shutil.rmtree(ChSwSubDir)
 
 
     ###########################################################################
@@ -2609,15 +2703,17 @@ def main():
             reccount = 0
             ChSwLeftOvers = ChSwSubDir + "\\**\*.csv"
 
-            for ChName in glob.glob('.\\**\*user_added_to_interesting_group.csv', recursive=True):
-                print("[!] Unprocessed F-Secure Countercept Chainsaw File: " + ChName)
-                reccount = reccount + 1
+            if ChSwSubDir != "":
+                for ChName in glob.glob(ChSwLeftOvers, recursive=True):
+                    print("[!] Unprocessed F-Secure Countercept Chainsaw File: " + ChName)
+                    reccount = reccount + 1
 
             if reccount == 0:
                 print("[+] No Unprocessed Chainsaw Files. Deleting ChainSaw Directory: " + ChSwSubDir)
                 shutil.rmtree(ChSwSubDir)
             else:
                 print("[+] There are Unprocessed Chainsaw Files. So I WILL NOT Delete the ChainSaw Directory")
+                print("[!] WARNING: Next Time AChReport Runs, IT WILL DELETE THESE FILES!")
 
         else:
             print("[!] Chainsaw Executable not found!  Bypassing Chainsaw Processing...")
