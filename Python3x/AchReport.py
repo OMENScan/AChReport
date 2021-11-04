@@ -37,6 +37,7 @@
 #   v0.97 - Add Regripper AmCache Parser                              #
 #   v0.98 - Integrate F-Secure Countercept ChainSaw with AChReport    #
 #   v0.99 - Pre-Cleanup Any Leftover Files                            #
+#   v0.99a - Bug deleting directory when there is no Chainsaw output  #
 ####################################################################### 
 import os
 import sys
@@ -2710,7 +2711,8 @@ def main():
 
             if reccount == 0:
                 print("[+] No Unprocessed Chainsaw Files. Deleting ChainSaw Directory: " + ChSwSubDir)
-                shutil.rmtree(ChSwSubDir)
+                if ChSwSubDir != "":
+                    shutil.rmtree(ChSwSubDir)
             else:
                 print("[+] There are Unprocessed Chainsaw Files. So I WILL NOT Delete the ChainSaw Directory")
                 print("[!] WARNING: Next Time AChReport Runs, IT WILL DELETE THESE FILES!")
