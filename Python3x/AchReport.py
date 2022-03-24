@@ -38,6 +38,8 @@
 #   v0.98 - Integrate F-Secure Countercept ChainSaw with AChReport    #
 #   v0.99 - Pre-Cleanup Any Leftover Files                            #
 #   v0.99a - Bug deleting directory when there is no Chainsaw output  #
+#   v0.99b - Add DNSCache ouput from veloceraptor                     #
+#   v0.99c - Add LNK Analysis and Powershell Logs                     #
 ####################################################################### 
 import os
 import sys
@@ -177,8 +179,10 @@ def main():
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
-    RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = 0
-    SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = SrcAmCTxt = 0
+    RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = 0
+
+    SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = 0
+    SrcAmCTxt = SrcLnkPrs = SrcPwsLog = 0
 
     print("[+] Checking For Config File...")
     if os.path.isfile(cfgname):
@@ -281,6 +285,12 @@ def main():
             elif cfgline.startswith("Run:IndicatorsDomain"):
                 RunIndDom = 1
 
+            elif cfgline.startswith("Run:LnkParse"):
+                RunLnkPrs = 1
+
+            elif cfgline.startswith("Run:PShelLog"):
+                RunPwsLog = 1
+
     else:
         print("[!] Config File Not Found (" + cfgname + "), Default Setting Configured.")
         RunAllAll = 1
@@ -319,6 +329,8 @@ def main():
         os.remove("SecEvt4698.csv")
     if os.path.isfile("RBin.dat"):
         os.remove("RBin.dat")
+    if os.path.isfile("LNKFiles.csv"):
+        os.remove("LNKFiles.csv")
 
     for curfile in os.listdir("."):
         if curfile.startswith("shlasst."):
@@ -667,34 +679,34 @@ def main():
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
-    outfile.write("<tr><td width=6%> <a href=#Top>Top</a> </td>\n")
+    outfile.write("<tr><td width=5%> <a href=#Top>Top</a> </td>\n")
 
     if RunAllAll == 1 or RunSmlDel == 1:
-        outfile.write("<td width=6%> <a href=#Deleted>Deltd</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#Deleted>Deltd</a> </td>\n")
 
     if RunAllAll == 1 or RunLrgAct == 1:
-        outfile.write("<td width=6%> <a href=#Active>Activ</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#Active>Activ</a> </td>\n")
 
     if RunAllAll == 1 or RunTmpAct == 1:
         outfile.write("<td width=5%> <a href=#ExeTemp>Temp</a> </td>\n")
 
     if RunAllAll == 1 or RunFaiLgn == 1:
-        outfile.write("<td width=7%> <a href=#Logins>FailLgn</a> </th>\n")
+        outfile.write("<td width=5%> <a href=#Logins>FaiLgn</a> </th>\n")
 
     if RunAllAll == 1 or RunSucRDP == 1:
         outfile.write("<td width=5%> <a href=#RDP>RDP</a> </th>\n")
 
     if RunAllAll == 1 or RunFBrArc == 1:
-        outfile.write("<td width=6%> <a href=#Browser>Brwsr</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#Browser>Brwsr</a> </td>\n")
 
     if RunAllAll == 1 or RunPrfHst == 1:
         outfile.write("<td width=5%> <a href=#Prefetch>Pref</a> </td>\n")
 
     if RunAllAll == 1 or RunAmCach == 1:
-        outfile.write("<td width=6%> <a href=#AmCache>AmCsh</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#AmCache>AmCsh</a> </td>\n")
 
     if RunAllAll == 1 or RunUsrAst == 1:
-        outfile.write("<td width=7%> <a href=#UserAssist>UsrAsst</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#UserAssist>UsrAst</a> </td>\n")
 
     if RunAllAll == 1 or RunIPCons == 1:
         outfile.write("<td width=5%> <a href=#IPConn>IPCon</a> </td>\n")
@@ -703,13 +715,19 @@ def main():
         outfile.write("<td width=5%> <a href=#DNSCache>DNS</a> </td>\n")
 
     if RunAllAll == 1 or RunAutoRn == 1:
-        outfile.write("<td width=7%> <a href=#AutoRun>AutoRun</a> </td>\n")
+        outfile.write("<td width=5%> <a href=#AutoRun>AutRun</a> </td>\n")
 
     if RunAllAll == 1 or RunServic == 1:
         outfile.write("<td width=5%> <a href=#InstSVC>EVTx</a> </td>\n")
 
     if RunAllAll == 1 or RunRcyBin == 1:
         outfile.write("<td width=5%> <a href=#RBin>RBin</a> </td>\n")
+
+    if RunAllAll == 1 or RunPwsLog == 1:
+        outfile.write("<td width=5%> <a href=#PShell>Pshl</a> </td>\n")
+
+    if RunAllAll == 1 or RunLnkPrs == 1:
+        outfile.write("<td width=5%> <a href=#LNKFiles>LNK</a> </td>\n")
 
     if RunAllAll == 1 or RunChnSaw == 1:
         outfile.write("<td width=5%> <a href=#ChainSaw>ChSw</a> </td>\n")
@@ -1916,6 +1934,165 @@ def main():
         print("[+] Bypassing User Assist Information...")
 
 
+    ###########################################################################
+    # Write PowerShell Log Data (ConsoleHost_history.txt) for each profile    #
+    ###########################################################################
+    if RunAllAll == 1 or RunPwsLog == 1:
+        print("[+] Generating PowerShell Log Information...")
+
+        outfile.write("<a name=PShell></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id29\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id29\">\n")
+        outfile.write("<H2>PowerShell Logs</H2>\n")
+        outfile.write("</label><div><hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
+        outfile.write("individual user PowerShell Logs. Powershell is often used legitimately by system \n")
+        outfile.write("administrators. However, Hostile actors can, and do use Powershell for malicious \n")
+        outfile.write("purposes.  Review the logs for any suspicious commands that might indicate hostile \n")
+        outfile.write("intent.</font></i></p>\n")
+
+        print("[+] Reading PowerShell Logs Multiple User Profiles...")
+        filcount = 0
+
+        curdir = dirname + "\\Psh"
+        #lencurdir = len(curdir)
+        for root, dirs, files in os.walk(curdir):
+            for fname in files:
+                fnameUpper = fname.upper()
+                curfile = os.path.join(root, fname)
+
+                if fnameUpper.startswith("CONSOLEHOST_HISTORY."):
+                    filcount = filcount + 1
+                    reccount = 0
+                    outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                    outfile.write("<tr><td style=\"text-align: left\">\n")
+                    outfile.write("<h2> Powershell Log: " + curfile + "</h2><br>\n")
+
+                    innfile = open(curfile, encoding='utf8', errors="replace")
+                    for innline in innfile:
+                        outfile.write(innline.strip()  + "<br>\n")
+                        reccount = reccount + 1
+                    innfile.close()
+                    outfile.write("</td></tr></table>\n")
+
+                if reccount < 1:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
+        if filcount < 1:
+            print("[!] No User PowerShell Logs Found (No Input Data)...")
+            outfile.write("<p><b><font color = red> No User PowerShell Logs Found! </font></b></p>\n")
+
+        outfile.write("</div>\n")
+
+    else:
+      print("[+] ByPassing PowerShell Logs for Multiple User Profiles...")
+
+
+    ###########################################################################
+    # Parse Desktop and Recent Link Files                                     #
+    ###########################################################################
+    if RunAllAll == 1 or RunLnkPrs == 1:
+        print("[+] Generating Desktop and Recent LNK Information...")
+
+        outfile.write("<a name=LNKFiles></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id30\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id30\">\n")
+        outfile.write("<H2>Desktop and Recent LNK Files</H2>\n")
+        outfile.write("</label><div><hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed theLNK Files in \n")
+        outfile.write("individual user Desktop and Recent Locations.  LNK files are not inherently hostile. \n")
+        outfile.write("They are an artifact that indicates a program was run or an associated file was opened  \n")
+        outfile.write("(the program associated with the file was run). Review these files and programs for \n")
+        outfile.write("suspicious activity or unusual names that indicate hostile intent.</font></i></p>\n")
+
+        print("[+] Checking for Eric Zimmerman LECmd Link Parser...")
+
+        if os.path.isfile(".\\LECmd.exe") == False:
+            print("[?] LECmd executable not found...  Would you like to Download it...")
+            YesOrNo = input("[?] Y/N > ")
+
+            if YesOrNo.upper() == "Y":
+                print("[+] Downloading LECmd from Eric Zimmerman Web Site...")
+                LECUrl = 'https://f001.backblazeb2.com/file/EricZimmermanTools/LECmd.zip'
+                LECReq = requests.get(LECUrl, allow_redirects=True)
+                open('LECmd.zip', 'wb').write(LECReq.content)
+
+                print("[+] Unzipping LECmd...")
+                with ZipFile('LECmd.zip', 'r') as zipObj:
+                    # Extract all the contents of zip file in current directory
+                    zipObj.extractall()
+            else:
+                print("[!] LECmd Download Bypassed...")
+
+
+        exeName = ".\\LECmd.exe"
+        if os.path.isfile(exeName):
+            print("[+] LECmd executable found")
+            print("[+] Parsing Desktop and Recent LNK Files from Multiple User Profiles...")
+
+            curdir = dirname + "\\Lnk"
+            filname = "LNKFiles.csv"
+            cmdexec = exeName + " -q -d " + curdir + " --csv .\\ --csvf " + filname 
+            returned_value = os.system(cmdexec)
+
+            print("[+] Reading Desktop and Recent LNK Files from Multiple User Profiles...")
+
+            reccount = 0
+
+            if os.path.isfile(filname):
+                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 18:
+                            if reccount == 0:
+                                tdtr = "th"
+                                csvrow[1] = "Source<br>Create"
+                                csvrow[2] = "Source<br>Modify"
+                                csvrow[3] = "Source<br>Access"
+                                csvrow[4] = "Target<br>Create"
+                                csvrow[5] = "Target<br>Modify"
+                                csvrow[6] = "Target<br>Access"
+                            else:
+                                tdtr = "td"
+
+                            outfile.write("<tr><" + tdtr + " width=25%>" + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=23%>" + csvrow[15] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + csvrow[18] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[1] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[3] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[4] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[5] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + csvrow[6] + "</" + tdtr + "></tr>\n")
+
+                            reccount = reccount + 1
+
+                outfile.write("</table>\n")
+                os.remove(filname)
+
+                if reccount < 2:
+                    print("[!] No LNK File Data Found...")
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
+            else:
+                print("[!] No LNK Data Found...")
+                outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+
+            outfile.write("</div>\n")
+
+        else:
+            print("[!] LECmd Executable Not Found, Parsing Bypassed...")
+
+    else:
+      print("[+] ByPassing LECmd Parsing for Multiple User Profiles...")
+
 
     ###########################################################################
     # Write AutoRunsc Data (Run and RunOnce) (Use Python CSV Reader Module)   #
@@ -2193,6 +2370,7 @@ def main():
         writeRow = 0
         LastRec = ""
         filname = dirname + "\\sys\\IPCfgDNS.dat"
+        csvname = dirname + "\\sys\\DNSCache.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -2266,6 +2444,41 @@ def main():
 
             outfile.write("</table>\n")
             innfile.close()
+
+        elif os.path.isfile(csvname):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            with open(csvname, 'r', encoding='utf8', errors="replace") as csvfile:
+                csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                for csvrow in csvread:
+                    if len(csvrow) > 4:
+                        if reccount == 0:
+                            tdtr = "th"
+                        else:
+                            tdtr = "td"
+
+                        if reccount == 0:
+                            outfile.write("<tr><" + tdtr + " width=35%> " + csvrow[0] + " </" + tdtr + ">\n")
+                        else:
+                            outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + csvrow[0] + "</a> </" + tdtr + ">\n")
+
+                        outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=10%> " + csvrow[3] + " </" + tdtr + ">\n")
+
+                        if reccount == 0:
+                            outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " </" + tdtr + "></tr>\n")
+                        else:
+                            outfile.write("<" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[4] + ">" + csvrow[4] + "</a> </" + tdtr + "></tr>\n")
+
+                        reccount = reccount + 1
+
+            outfile.write("</table>\n")
+
+            if reccount < 2:
+                outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            else:
+                outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
         else:
             print("[!] No DNS Cache Data  Found (No Input Data)...")
             outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
