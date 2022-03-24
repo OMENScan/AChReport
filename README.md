@@ -28,15 +28,20 @@ IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires 
 5. AChReport is meant to run on Windows
 6. AChReport now supports AChoir, and the Windows collections of AChoirX
 7. As of v0.98 AChReport can now download and integrate F-secure Countecept Chainsaw
+8. As of v0.99c AChReport can now download and integrate Eric Zimmerman's LECmd to parse LNK files
 
 RegRipper can be found at:
  https://github.com/keydet89/RegRipper2.8
+ https://github.com/keydet89/RegRipper3.0
 
 Microsoft LogParser can be found at:
  https://www.microsoft.com/en-us/download/details.aspx?id=24659
 
 F-Secure Countercept Chainsaw can be found at:
  https://github.com/countercept/chainsaw
+
+Eric Zimmerman's LECmd can be found at:
+ https://ericzimmerman.github.io/#!index.md
 
 To run AChReport use the -d switch to point to the AChoir extract directory.  For Example:
 
