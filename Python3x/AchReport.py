@@ -40,6 +40,7 @@
 #   v0.99a - Bug deleting directory when there is no Chainsaw output  #
 #   v0.99b - Add DNSCache ouput from veloceraptor                     #
 #   v0.99c - Add LNK Analysis and Powershell Logs                     #
+#   v0.99d - Minor Big Fixes                                          #
 ####################################################################### 
 import os
 import sys
@@ -480,7 +481,7 @@ def main():
                 fnameUpper = fname.upper()
                 curfile = os.path.join(root, fname)
 
-                if fnameUpper.startswith("NTUSER."):
+                if fnameUpper.startswith("NTUSER.") and fnameUpper.endswith(".DAT"):
                     curouput = "shlasst." + str(reccount)
 
                     astfile = open(curouput, "w", encoding='utf8', errors="replace")
@@ -1976,10 +1977,10 @@ def main():
                     innfile.close()
                     outfile.write("</td></tr></table>\n")
 
-                if reccount < 1:
-                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
-                else:
-                    outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+                    if reccount < 1:
+                        outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                    else:
+                        outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
 
         if filcount < 1:
             print("[!] No User PowerShell Logs Found (No Input Data)...")
