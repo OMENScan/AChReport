@@ -674,10 +674,10 @@ def main():
     outfile.write(" line-height: 20px; margin-right: 5px; text-align: center; width: 20px;}\n")
     outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
 
-    outfile.write("</style><title>AChoir Endpoint Report(" + diright + ")</title></head>\n")
+    outfile.write("</style><title>AChoir/Velociraptor Endpoint Report(" + diright + ")</title></head>\n")
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
-    outfile.write("<a name=Top></a>\n<H1>AChoir Endpoint Report</H1>\n")
+    outfile.write("<a name=Top></a>\n<H1>AChoir/Velociraptor Endpoint Report</H1>\n")
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
@@ -856,7 +856,10 @@ def main():
         innfile = open(filname, encoding='utf8', errors="replace")
 
         for innline in innfile:
-            outfile.write(innline.strip() + "<br>\n")
+            if innline.startswith('"'):
+                pass
+            else:
+                outfile.write(innline.strip() + "<br>\n")
         innfile.close()
     else:
         print("[!] Error Generating Logon Information...")
