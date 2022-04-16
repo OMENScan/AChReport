@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v0.98 (Python 3.x)                                    #
+# Version: beta v0.99e (Python 3.x)                                   #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
-#   Read the artifacts output by AChoir and create a report           #
+#   Read the artifacts output by Veloceraptor (Converted to CSV)      #
 #                                                                     #
 #   v0.81 - Copy RegRipper Plugins to subdirectory if not there       #
 #   v0.82 - Check Dependencies: Regripper Plugins and LogParser       #
@@ -41,6 +41,7 @@
 #   v0.99b - Add DNSCache ouput from veloceraptor                     #
 #   v0.99c - Add LNK Analysis and Powershell Logs                     #
 #   v0.99d - Minor Big Fix                                            #
+#   v0.99e - Modified to read Converted Velocerator CSV Files         #
 ####################################################################### 
 import os
 import sys
@@ -1534,7 +1535,7 @@ def main():
                         else:
                             tdtr = "td"
 
-                        fullURL = csvrow[0]
+                        fullURL = csvrow[3]
                         if not fullURL.startswith("file:///"):
                             outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=50%>" + csvrow[3] + "</" + tdtr + ">\n")
@@ -1543,7 +1544,7 @@ def main():
                             outfile.write("<" + tdtr + " width=15%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
 
                             # Write out Domain for Bulk Lookup 
-                            url_split = csvrow[0].split('/')
+                            url_split = csvrow[3].split('/')
                             if len(url_split) > 2:
                                 domfileall.write(url_split[2] + "\n")
 
@@ -1674,14 +1675,14 @@ def main():
                         outfile.write("<td width=5%>" + csvrow[9] + "</td>\n")
                         outfile.write("<td width=15%>" + csvrow[11] + "</td>\n")
                         outfile.write("<td width=5%>" + csvrow[12] + "</td>\n")
-                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[13] + ">" + csvrow[8] + "</a> </td>\n")
+                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[13] + ">" + csvrow[13] + "</a> </td>\n")
                         outfile.write("<td width=5%>" + csvrow[14] + "</td>\n")
                         outfile.write("<td width=10%>" + csvrow[13] + "</td>\n")
                         outfile.write("<td width=5%>" + csvrow[10] + "</td>\n")
                         outfile.write("<td width=35%>" + csvrow[4] + "</td></tr>\n")
 
                         # Write out IP Address for Bulk Lookup 
-                        ipsfileall.write(csvrow[8] + "\n")
+                        ipsfileall.write(csvrow[13] + "\n")
 
             outfile.write("</table>\n")
 
@@ -2461,6 +2462,10 @@ def main():
                             outfile.write("<tr><" + tdtr + " width=35%> " + csvrow[0] + " </" + tdtr + ">\n")
                         else:
                             outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + csvrow[0] + "</a> </" + tdtr + ">\n")
+                            # Write out IP Address for Bulk Lookup 
+                            ipsfileall.write(csvrow[3].strip() + "\n")
+                            # Write out Domain for Bulk Lookup 
+                            domfileall.write(csvrow[0].strip() + "\n")
 
                         outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")

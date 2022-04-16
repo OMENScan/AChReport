@@ -2461,6 +2461,8 @@ def main():
                             outfile.write("<tr><" + tdtr + " width=35%> " + csvrow[0] + " </" + tdtr + ">\n")
                         else:
                             outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + csvrow[0] + "</a> </" + tdtr + ">\n")
+                            # Write out Domain for Bulk Lookup 
+                            domfileall.write(csvrow[0].strip() + "\n")
 
                         outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")
@@ -2470,6 +2472,8 @@ def main():
                             outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " </" + tdtr + "></tr>\n")
                         else:
                             outfile.write("<" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[4] + ">" + csvrow[4] + "</a> </" + tdtr + "></tr>\n")
+                            # Write out IP Address for Bulk Lookup 
+                            ipsfileall.write(csvrow[4].strip() + "\n")
 
                         reccount = reccount + 1
 
