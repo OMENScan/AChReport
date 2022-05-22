@@ -2356,6 +2356,13 @@ def main():
 
         reccount = 0
         curdir = dirname + "\\sch"
+        curCdir = dirname + "\\C\\Windows\\System32\\Tasks"
+
+        ###########################################################################
+        # Check for alternate location of Sched Task Collection                   #
+        ###########################################################################
+        if os.path.isdir(curCdir):
+            curdir = curCdir
 
         if os.path.isdir(curdir):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
