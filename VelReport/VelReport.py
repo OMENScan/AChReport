@@ -42,6 +42,7 @@
 #   v0.99c - Add LNK Analysis and Powershell Logs                     #
 #   v0.99d - Minor Big Fix                                            #
 #   v0.99e - Modified to read Converted Velocerator CSV Files         #
+#   v0.99f - Add Raw XML Sched Task Parsing                           #
 ####################################################################### 
 import os
 import sys
@@ -2342,6 +2343,64 @@ def main():
         else:
             print("[!] No New Scheduled Tasks Found (No Input Data)...")
             outfile.write("<p><b><font color = red> No Input Data Found! </font></b></p>\n")
+
+
+        ###########################################################################
+        # Most Collections are going to run AutoRuns - But Just in case we want   #
+        #  to collections the raw Scheduled Task XML File - This sectio will      #
+        #  Parse them.                                                            #
+        ###########################################################################
+        print("[+] Parsing Sched Tasks XML...")
+        outfile.write("<hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
+        outfile.write("All Scheduled Task XML Files.  Scheduled Tasks are stored under c:\Windows\System32\Tasks \n")
+        outfile.write("in Unicode XML Files.  This section simply parses the URI and Command Entries. Review \n")
+        outfile.write("These for any suspicious scheduled tasks that could have hostile intent. </font></i></p>\n")
+
+        reccount = 0
+        curdir = dirname + "\\sch"
+
+        if os.path.isdir(curdir):
+            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<tr><th width=40%> URI </th>\n")
+            outfile.write("<th width=60%> Command </th></tr>\n")
+
+            for root, dirs, files in os.walk(curdir):
+                for fname in files:
+                    fnameUpper = fname.upper()
+                    curfile = os.path.join(root, fname)
+
+                    task_URI = ""
+                    task_Command = ""
+
+                    innfile = open(curfile, encoding='utf16', errors="replace")
+                    for innline in innfile:
+                        strip_innline = innline.strip()
+
+                        if strip_innline.startswith("<URI>"):
+                            task_URI = strip_innline[5:]
+
+                        elif strip_innline.startswith("<Command>"):
+                            task_Command = strip_innline[9:]
+
+                    innfile.close()
+
+                    outfile.write("<tr><td style=\"text-align: left\" width=40%>" + task_URI + "</td>\n")
+                    outfile.write("<td style=\"text-align: left\" width=60%>" + task_Command + "</td></tr>\n")
+
+                    reccount = reccount + 1
+
+            outfile.write("</table>\n")
+
+            if reccount < 2:
+                outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+            else:
+                outfile.write("<p>XML Scheduled Tasks Found: " + str(reccount) + "</p>\n")
+
+
+        else:
+            outfile.write("<p><b><font color = red>No XML Scheduled Tasks Were Collected.</font></b></p>\n")
 
         outfile.write("</div>\n")
 
