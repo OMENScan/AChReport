@@ -1662,8 +1662,8 @@ def main():
                                 PostIOC = " "
 
                             outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=55%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
