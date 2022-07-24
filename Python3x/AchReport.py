@@ -2803,9 +2803,9 @@ def main():
                                 PostIOC2 = " "
 
                             outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + PreIOC2 + csvrow[0] + PostIOC2 + "</a> </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%> + PreIOC2 " + csvrow[1] + PostIOC2 + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%> + PreIOC2 " + csvrow[2] + PostIOC2 + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>  + PreIOC2" + csvrow[3] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + PreIOC2 + csvrow[1] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + PreIOC2 + csvrow[2] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + PreIOC2 + csvrow[3] + PostIOC2 + " </" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[4] + ">" + PreIOC2 + csvrow[4] + PostIOC2 + "</a> </" + tdtr + "></tr>\n")
 
                             # Write out Domain for Bulk Lookup 
