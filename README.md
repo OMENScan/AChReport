@@ -49,11 +49,11 @@ Eric Zimmerman's LECmd can be found at:
 
 The AChReport.cfg file currently has two types of settings:
 
-Run:[The Report Section to run]
+     Run:[The Report Section to run]
 
 The Run: Option simply tells AChreport which sections to run (or not run).
 
-IOC:[Simple Text String to Highlight in RED]
+     IOC:[Simple Text String to Highlight in RED]
 
 The IOC: options allows the analyst to identify strings in the report to highlight in RED.
 For instance, if the analyst knows that IP Address 1.2.3.4 is an Indicator, they can
