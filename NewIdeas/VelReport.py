@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v0.99 (Python 3.x)                                    #
+# Version: beta v0.99e (Python 3.x)                                   #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
-#   Read the artifacts output by AChoir and create a report           #
+#   Read the artifacts output by Veloceraptor (Converted to CSV)      #
 #                                                                     #
 #   v0.81 - Copy RegRipper Plugins to subdirectory if not there       #
 #   v0.82 - Check Dependencies: Regripper Plugins and LogParser       #
@@ -40,9 +40,10 @@
 #   v0.99a - Bug deleting directory when there is no Chainsaw output  #
 #   v0.99b - Add DNSCache ouput from veloceraptor                     #
 #   v0.99c - Add LNK Analysis and Powershell Logs                     #
-#   v0.99d - Minor Bug Fixes                                          #
-#   v0.99e - Add Raw XML Sched Task Parsing                           #
-#   v0.99f - Add IOC Search                                           #
+#   v0.99d - Minor Big Fix                                            #
+#   v0.99e - Modified to read Converted Velocerator CSV Files         #
+#   v0.99f - Add Raw XML Sched Task Parsing                           #
+#   v0.99g - Add IOC Search                                           #
 ####################################################################### 
 import os
 import sys
@@ -183,8 +184,6 @@ def main():
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
     RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = 0
-
-    HasIOCs = 0
 
     SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = 0
     SrcAmCTxt = SrcLnkPrs = SrcPwsLog = 0
@@ -415,16 +414,16 @@ def main():
     print("[+] Now Building Additional Data from Sources...")
     print("[+] Generating System Information from Registry...")
     
-    regName = dirname + "\Reg\SOFTWARE"
+    regName = dirname + "\\C\\Windows\\System32\\config\\SOFTWARE"
     if os.path.isfile(regName):
         SrcSysReg = 1
     
         exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p source_os -r " + dirname + "\Reg\SOFTWARE > SysInfo.dat"
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p source_os -r " + dirname + "\\C\\Windows\\System32\\config\\SOFTWARE > SysInfo.dat"
             returned_value = os.system(cmdexec)
 
-            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p winver -r " + dirname + "\Reg\SOFTWARE >> SysInfo.dat"
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p winver -r " + dirname + "\\C\\Windows\\System32\\config\\SOFTWARE >> SysInfo.dat"
             returned_value = os.system(cmdexec)
 
             SrcSysTxt = 1
@@ -437,13 +436,13 @@ def main():
         SrcSysReg = 0
 
 
-    regName = dirname + "\Reg\SYSTEM"
+    regName = dirname + "\\C\\Windows\\System32\\config\\SYSTEM"
     if os.path.isfile(regName):
         SrcSysReg = 1
 
         exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p compname -r " + dirname + "\Reg\SYSTEM >> SysInfo.dat"
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p compname -r " + dirname + "\\C\\Windows\\System32\\config\\SYSTEM >> SysInfo.dat"
             returned_value = os.system(cmdexec)
 
             SrcSysTxt = 1
@@ -456,13 +455,13 @@ def main():
 
 
     print("[+] Generating AmCache Information from Registry...")
-    regName = dirname + "\Reg\AmCache.hve"
+    regName = dirname + "\\C\Windows\\appcompat\\Programs\\AmCache.hve"
     if os.path.isfile(regName):
         SrcAmCach = 1
 
         exeName = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe"
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p amcache -r " + dirname + "\Reg\AmCache.hve > AmCache.dat"
+            cmdexec = dirleft + "\\RRV\\RegRipper3.0-master\\rip.exe -p amcache -r " + dirname + "\\C\Windows\\appcompat\\Programs\\AmCache.hve > AmCache.dat"
             returned_value = os.system(cmdexec)
 
             SrcAmCTxt = 1
@@ -479,7 +478,7 @@ def main():
         exeName = dirleft + "\\SYS\\WinPrefetchView.exe"
 
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\SYS\\WinPrefetchView.exe /folder " + dirname + "\prf /scomma WinPrefetchview.csv"
+            cmdexec = dirleft + "\\SYS\\WinPrefetchView.exe /folder " + dirname + "\\C\\Windows\\Prefetch /scomma WinPrefetchview.csv"
             returned_value = os.system(cmdexec)
         else:
             print("[!] WinPrefetchView Not Found...")
@@ -491,7 +490,7 @@ def main():
     if RunAllAll == 1 or SrcNTUsr == 1:
         print("[+] Generating User Assist for Multiple User Profiles...")
         reccount = 0
-        curdir = dirname + "\\reg"
+        curdir = dirname + "\\C\\Users"
         for root, dirs, files in os.walk(curdir):
             for fname in files:
                 fnameUpper = fname.upper()
@@ -519,12 +518,12 @@ def main():
         print("[+] Generating Event Log Entries...")
         print("[+] Generating RDP Success and Failure...")
 
-        EvtName = dirname + "\\evt\\sys32\\Security.evtx"
+        EvtName = dirname + "\\C\\Windows\\System32\\winevt\\Logs\\Security.evtx"
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
         else:
-            EvtName = dirname + "\\evt\\nativ\\Security.evtx"
+            EvtName = dirname + "\\C\\Windows\\System32\\winevt\\Logs\\Security.evtx"
             if os.path.isfile(EvtName):
                 cmdexec = "copy " + EvtName
                 returned_value = os.system(cmdexec)
@@ -535,12 +534,12 @@ def main():
 
         print("[+] Generating Service Installed (7045) Messages...")
 
-        EvtName = dirname + "\\evt\\sys32\\System.evtx"
+        EvtName = dirname + "\\C\\Windows\\System32\\winevt\\Logs\\System.evtx"
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
         else:
-            EvtName = dirname + "\\evt\\nativ\\System.evtx"
+            EvtName = dirname + "\\C\\Windows\\System32\\winevt\\Logs\\System.evtx"
             if os.path.isfile(EvtName):
                 cmdexec = "copy " + EvtName
                 returned_value = os.system(cmdexec)
@@ -611,13 +610,13 @@ def main():
 
         exeName = dirleft + "\\DSK\\MFTDump.exe"
         if os.path.isfile(exeName):
-            MFTName = dirname + "\\RawData\\$MFT"
+            MFTName = dirname + "\\C\\$MFT"
             if os.path.isfile(MFTName):
                 cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName 
                 returned_value = os.system(cmdexec)
                 MFTFound = 1
 
-            MFTName = dirname + "\\RawData\\MFT-C"
+            MFTName = dirname + "\\C\\MFT-C"
             if os.path.isfile(MFTName):
                 cmdexec = dirleft + "\\DSK\\MFTDump.exe /l /d /v --output=MFTDump.csv " + MFTName
                 returned_value = os.system(cmdexec)
@@ -689,10 +688,10 @@ def main():
     outfile.write(" line-height: 20px; margin-right: 5px; text-align: center; width: 20px;}\n")
     outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
 
-    outfile.write("</style><title>AChoir Endpoint Report(" + diright + ")</title></head>\n")
+    outfile.write("</style><title>AChoir/Velociraptor Endpoint Report(" + diright + ")</title></head>\n")
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
-    outfile.write("<a name=Top></a>\n<H1>AChoir Endpoint Report</H1>\n")
+    outfile.write("<a name=Top></a>\n<H1>AChoir/Velociraptor Endpoint Report</H1>\n")
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
@@ -865,13 +864,16 @@ def main():
     outfile.write("SysInternals PSLoggedon.exe utility.  This information will help you \n")
     outfile.write("determine who may be actively accessing this endpoint.</font></i></p>\n")
 
-    filname = dirname + "\\sys\\Logon.dat"
+    filname = dirname + "\\Sys\\Logon.dat"
 
     if os.path.isfile(filname):
         innfile = open(filname, encoding='utf8', errors="replace")
 
         for innline in innfile:
-            outfile.write(innline.strip() + "<br>\n")
+            if innline.startswith('"'):
+                pass
+            else:
+                outfile.write(innline.strip() + "<br>\n")
         innfile.close()
     else:
         print("[!] Error Generating Logon Information...")
@@ -989,7 +991,6 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if (nFileSize > 10000000 and nFileSize < 100000000):
-
                                     RowString = ' '.join(map(str, csvrow))
                                     if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
                                         PreIOC = " <b><font color=red>"
@@ -1059,7 +1060,6 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if nFileSize > 100000000:
-
                                     RowString = ' '.join(map(str, csvrow))
                                     if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
                                         PreIOC = " <b><font color=red>"
@@ -1496,7 +1496,7 @@ def main():
         outfile.write("in Temporary Directories.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + "\\Brw\\BrowseHist.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -1528,7 +1528,6 @@ def main():
                                 outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                                 reccount = reccount + 1
-
             outfile.write("</table>\n")
 
             if reccount < 2:
@@ -1565,7 +1564,7 @@ def main():
         outfile.write("accessed or archive files created.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + "\\Brw\\BrowseHist.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -1635,7 +1634,7 @@ def main():
         outfile.write("indicate malicious C2 activity or strings that may indicate access to Phishing sites.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + "\\Brw\\BrowseHist.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -1648,7 +1647,7 @@ def main():
                         else:
                             tdtr = "td"
 
-                        fullURL = csvrow[0]
+                        fullURL = csvrow[3]
                         if not fullURL.startswith("file:///"):
 
                             # Is it in our IOC List?
@@ -1667,7 +1666,7 @@ def main():
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             # Write out Domain for Bulk Lookup 
-                            url_split = csvrow[0].split('/')
+                            url_split = csvrow[3].split('/')
                             if len(url_split) > 2:
                                 domfileall.write(url_split[2] + "\n")
 
@@ -1785,20 +1784,20 @@ def main():
         outfile.write("VirusTotal for your convenience.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\sys\\CPorts.csv"
+        filname = dirname + "\\Sys\\CPorts.csv"
 
         if os.path.isfile(filname):
             print("[+] Reading CPorts Output File...")
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=13%> Process </th>\n")
+            outfile.write("<tr><th width=5%> Process </th>\n")
             outfile.write("<th width=5%> Prot. </th>\n")
-            outfile.write("<th width=10%> Local IP </th>\n")
+            outfile.write("<th width=15%> Local IP </th>\n")
             outfile.write("<th width=5%> LPort </th>\n")
-            outfile.write("<th width=10%> Remote IP </th>\n")
+            outfile.write("<th width=15%> Remote IP </th>\n")
             outfile.write("<th width=5%> RPort </th>\n")
-            outfile.write("<th width=15%> RHost </th>\n")
-            outfile.write("<th width=7%> State </th>\n")
-            outfile.write("<th width=30%> Process Path </th></tr>\n")
+            outfile.write("<th width=10%> RHost </th>\n")
+            outfile.write("<th width=5%> State </th>\n")
+            outfile.write("<th width=35%> Process Path </th></tr>\n")
 
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
@@ -1815,18 +1814,18 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
-                        outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
-                        outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
-                        outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
-                        outfile.write("<td width=15%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
-                        outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
-                        outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
+                        outfile.write("<tr bgcolor=E0E0E0><td width=5%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + csvrow[11] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[12] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[13] + ">" + PreIOC + csvrow[13] + PostIOC + "</a> </td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[14] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
+                        outfile.write("<td width=35%>" + PreIOC + csvrow[4] + PostIOC + "</td></tr>\n")
 
                         # Write out IP Address for Bulk Lookup 
-                        ipsfileall.write(csvrow[8] + "\n")
+                        ipsfileall.write(csvrow[13] + "\n")
 
             outfile.write("</table>\n")
 
@@ -1843,7 +1842,7 @@ def main():
         # This section looks for the netstat-abno.dat file and reformats it.      #
         ###########################################################################
         reccount = 0
-        filname = dirname + "\\sys\\netstat-abno.dat"
+        filname = dirname + "\\Sys\\netstat-abno.dat"
 
         if os.path.isfile(filname):
             print("[+] Reading netstat -abno Output File...")
@@ -2014,7 +2013,7 @@ def main():
         outfile.write("ordinary, or appears to be malicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\sys\\UserAssist.csv"
+        filname = dirname + "\\Sys\\UserAssist.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -2139,7 +2138,7 @@ def main():
         print("[+] Reading PowerShell Logs Multiple User Profiles...")
         filcount = 0
 
-        curdir = dirname + "\\Psh"
+        curdir = dirname + "\\C\\Users"
         #lencurdir = len(curdir)
         for root, dirs, files in os.walk(curdir):
             for fname in files:
@@ -2227,7 +2226,7 @@ def main():
             print("[+] LECmd executable found")
             print("[+] Parsing Desktop and Recent LNK Files from Multiple User Profiles...")
 
-            curdir = dirname + "\\Lnk"
+            curdir = dirname + "\\C\\Users"
             filname = "LNKFiles.csv"
             cmdexec = exeName + " -q -d " + curdir + " --csv .\\ --csvf " + filname 
             returned_value = os.system(cmdexec)
@@ -2318,7 +2317,7 @@ def main():
         outfile.write("look suspicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\arn\\AutoRun.dat"
+        filname = dirname + "\\Arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -2355,7 +2354,6 @@ def main():
                             outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td></tr>\n")
 
                             reccount = reccount + 1
-
             outfile.write("</table>\n")
 
             if reccount < 2:
@@ -2390,7 +2388,7 @@ def main():
         outfile.write("look suspicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\arn\\AutoRun.dat"
+        filname = dirname + "\\Arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -2685,8 +2683,8 @@ def main():
         reccount = 0
         writeRow = 0
         LastRec = ""
-        filname = dirname + "\\sys\\IPCfgDNS.dat"
-        csvname = dirname + "\\sys\\DNSCache.csv"
+        filname = dirname + "\\Sys\\IPCfgDNS.dat"
+        csvname = dirname + "\\Sys\\DNSCache.csv"
 
         if os.path.isfile(filname):
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
@@ -2749,6 +2747,7 @@ def main():
                         outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + PreIOC + RecType.strip() + PostIOC + "</a> </td>\n")
                         outfile.write("<td width=25%> A (Host) </td></tr>\n")
 
+                        # Write out IP Address for Bulk Lookup 
                         ipsfileall.write(RecType.strip() + "\n")
 
                         # Write out Domain for Bulk Lookup 
@@ -2906,6 +2905,7 @@ def main():
 
     else:
         print("[+] Bypassing Recycle Bin ($Recycle.Bin) Information...")
+
 
 
     ###########################################################################
@@ -3364,6 +3364,7 @@ def main():
         print("[!] Bypassing Chainsaw Processing...")
 
 
+
     ###########################################################################
     # Write Uniq IP and Hash Files                                            #
     ###########################################################################
@@ -3523,7 +3524,6 @@ def main():
 
     else:
         print("[+] Bypassing Bulk Domains...")
-
 
 
     os.remove(ipsnameall)
