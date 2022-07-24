@@ -29,6 +29,7 @@ IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires 
 6. AChReport now supports AChoir, and the Windows collections of AChoirX
 7. As of v0.98 AChReport can now download and integrate F-secure Countecept Chainsaw
 8. As of v0.99c AChReport can now download and integrate Eric Zimmerman's LECmd to parse LNK files
+9. As of v0.99f AChReport can highlight IOCs (use the AChReport.cfg file to configure the IOCS ti highlight)
 
 RegRipper can be found at:
  https://github.com/keydet89/RegRipper2.8
@@ -43,6 +44,28 @@ F-Secure Countercept Chainsaw can be found at:
 Eric Zimmerman's LECmd can be found at:
  https://ericzimmerman.github.io/#!index.md
 
+
+# Configuration
+
+The AChReport.cfg file currently has two types of settings:
+
+Run:[The Report Section to run]
+The Run: Option simply tells AChreport which sections to run (or not run).
+
+IOC:[Simple Text String to Highlight in RED]
+The IOC: options allows the analyst to identify strings in the report to highlight in RED.
+For instance, if the analyst knows that IP Address 1.2.3.4 is an Indicator, they can
+add IOC:1.2.3.4 in the configuration file, and anywhere that AChReport encounters 
+that string, it will highlight the entry in RED. The goal is to make known indicators easy
+to identify in the report.
+
+
+# Command Line Arguments
+
 To run AChReport use the -d switch to point to the AChoir extract directory.  For Example:
 
      py Achreport.py -d c:\Achoir\ACQ-IR-PCName-20181116_1847
+
+To run AChReport with an alternate configuration file use the -c option. For Example, to use a config file called Achreport-Alt.cfg:
+
+     py Achreport.py -d c:\Achoir\ACQ-IR-PCName-20181116_1847 -c Achreport-Alt.cfg

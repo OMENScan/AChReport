@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v0.98 (Python 3.x)                                    #
+# Version: beta v0.99 (Python 3.x)                                    #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
@@ -42,6 +42,7 @@
 #   v0.99c - Add LNK Analysis and Powershell Logs                     #
 #   v0.99d - Minor Bug Fixes                                          #
 #   v0.99e - Add Raw XML Sched Task Parsing                           #
+#   v0.99f - Add IOC Search                                           #
 ####################################################################### 
 import os
 import sys
@@ -183,8 +184,15 @@ def main():
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
     RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = 0
 
+    HasIOCs = 0
+
     SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = 0
     SrcAmCTxt = SrcLnkPrs = SrcPwsLog = 0
+
+    PreIOC = " <b><font color=red>"
+    PostIOC = "</font></b> "
+    PreIOC2 = " <b><font color=red>"
+    PostIOC2 = "</font></b> "
 
     print("[+] Checking For Config File...")
     if os.path.isfile(cfgname):
@@ -292,6 +300,13 @@ def main():
 
             elif cfgline.startswith("Run:PShelLog"):
                 RunPwsLog = 1
+
+            elif cfgline.startswith("IOC:"):
+                if HasIOCs == 0:
+                    print("[+] Adding IOCs for Searching...")
+                    HasIOCs = 1                
+                    IOCList = []
+                IOCList.append(cfgline[4:].strip().lower())
 
     else:
         print("[!] Config File Not Found (" + cfgname + "), Default Setting Configured.")
@@ -904,12 +919,22 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if (nFileSize > 1000000 and nFileSize < 10000000):
-                                    outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                    outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                    RowString = ' '.join(map(str, csvrow))
+                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                        PreIOC = " <b><font color=red>"
+                                        PostIOC = "</font></b> "
+                                    else: 
+                                        PreIOC = " "
+                                        PostIOC = " "
+
+                                    outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC + "</td></tr>\n")
                                     reccount = reccount + 1
+
             outfile.write("</table>\n")
             # csvfile.close()
 
@@ -964,12 +989,22 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if (nFileSize > 10000000 and nFileSize < 100000000):
-                                    outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                    outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                    RowString = ' '.join(map(str, csvrow))
+                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                        PreIOC = " <b><font color=red>"
+                                        PostIOC = "</font></b> "
+                                    else: 
+                                        PreIOC = " "
+                                        PostIOC = " "
+
+                                    outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC + "</td></tr>\n")
                                     reccount = reccount + 1
+
             outfile.write("</table>\n")
             # csvfile.close()
 
@@ -1024,12 +1059,22 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if nFileSize > 100000000:
-                                    outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                    outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                    RowString = ' '.join(map(str, csvrow))
+                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                        PreIOC = " <b><font color=red>"
+                                        PostIOC = "</font></b> "
+                                    else: 
+                                        PreIOC = " "
+                                        PostIOC = " "
+
+                                    outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC + "</td></tr>\n")
                                     reccount = reccount + 1
+
             outfile.write("</table>\n")
             # csvfile.close()
 
@@ -1086,12 +1131,22 @@ def main():
                             if (FileSize.isdigit and len(FileSize) > 1):
                                 nFileSize = int(FileSize)
                                 if nFileSize > 100000000:
-                                    outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                    outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                    outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                    RowString = ' '.join(map(str, csvrow))
+                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                        PreIOC = " <b><font color=red>"
+                                        PostIOC = "</font></b> "
+                                    else: 
+                                        PreIOC = " "
+                                        PostIOC = " "
+
+                                    outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC  + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC  + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC  + "</td>\n")
+                                    outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC  + "</td></tr>\n")
                                     reccount = reccount + 1
+
             outfile.write("</table>\n")
             # csvfile.close()
 
@@ -1152,12 +1207,22 @@ def main():
                                     nFileSize = int(FileSize)
                                 else:
                                     nFileSize = 0
-                                outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                RowString = ' '.join(map(str, csvrow))
+                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                    PreIOC = " <b><font color=red>"
+                                    PostIOC = "</font></b> "
+                                else: 
+                                    PreIOC = " "
+                                    PostIOC = " "
+
+                                outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC + "</td></tr>\n")
                                 reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 1:
@@ -1217,12 +1282,22 @@ def main():
                                     nFileSize = int(FileSize)
                                 else:
                                     nFileSize = 0
-                                outfile.write("<tr><td width=40%>" + csvrow[13] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[6] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                                outfile.write("<td width=15%>" + csvrow[8] + "</td>\n")
-                                outfile.write("<td width=15%>" + "{:,}".format(nFileSize) + "</td></tr>\n")
+
+                                RowString = ' '.join(map(str, csvrow))
+                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                    PreIOC = " <b><font color=red>"
+                                    PostIOC = "</font></b> "
+                                else: 
+                                    PreIOC = " "
+                                    PostIOC = " "
+
+                                outfile.write("<tr><td width=40%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + csvrow[8] + PostIOC + "</td>\n")
+                                outfile.write("<td width=15%>" + PreIOC + "{:,}".format(nFileSize) + PostIOC + "</td></tr>\n")
                                 reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 1:
@@ -1279,12 +1354,21 @@ def main():
                         else:
                             tdtr = "td"
 
-                        outfile.write("<tr><" + tdtr + " width=20%>" + csvrow[0] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=15%>" + csvrow[1] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=10%>" + csvrow[4] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=20%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr><" + tdtr + " width=20%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=15%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                         # Write out IP Address for Bulk Lookup 
                         ipsfileall.write(csvrow[5] + "\n")
@@ -1362,8 +1446,17 @@ def main():
 
                 totIdx = len(dedupCol)
                 for curIdx in range(0, totIdx):
-                    outfile.write("<tr><td width=75%>" + dedupCol[curIdx] + "</td>\n")
-                    outfile.write("<td width=25%>" + str(dedupCnt[curIdx]) + "</td></tr>\n")
+                    # Is it in our IOC List?
+                    RowString = dedupCol[curIdx]
+                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    outfile.write("<tr><td width=75%>" + PreIOC + dedupCol[curIdx] + PostIOC + "</td>\n")
+                    outfile.write("<td width=25%>" + PreIOC + str(dedupCnt[curIdx]) + PostIOC + "</td></tr>\n")
 
                     reccount = reccount + 1
 
@@ -1419,13 +1512,23 @@ def main():
                         fullURL = csvrow[0]
                         if fullURL.startswith("file:///") or reccount == 0:
                             if ".rar" in fullURL or ".tgz" in fullURL or ".gz" in fullURL or ".tar" in fullURL or ".cab" in fullURL or ".zip" in fullURL or ".arc" in fullURL or ".7z" in fullURL or ".cab" in fullURL or reccount == 0:
-                                outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + csvrow[0] + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + csvrow[6] + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
+                                # Is it in our IOC List?
+                                RowString = ' '.join(map(str, csvrow))
+                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                    PreIOC = " <b><font color=red>"
+                                    PostIOC = "</font></b> "
+                                else: 
+                                    PreIOC = " "
+                                    PostIOC = " "
+
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                                 reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 2:
@@ -1477,11 +1580,21 @@ def main():
 
                         fullURL = csvrow[0]
                         if fullURL.startswith("file:///") or reccount == 0:
-                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=60%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + csvrow[6] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
+
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
 
@@ -1537,11 +1650,21 @@ def main():
 
                         fullURL = csvrow[0]
                         if not fullURL.startswith("file:///"):
-                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=60%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + csvrow[6] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + csvrow[7] + "</" + tdtr + "></tr>\n")
+
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             # Write out Domain for Bulk Lookup 
                             url_split = csvrow[0].split('/')
@@ -1605,12 +1728,23 @@ def main():
                 for csvrow in csvread:
                     if len(csvrow) > 7:
                         reccount = reccount + 1
-                        outfile.write("<tr bgcolor=E0E0E0><td width=20%>" + csvrow[0] + "</td>\n")
-                        outfile.write("<td width=15%>" + csvrow[1] + "</td>\n")
-                        outfile.write("<td width=15%>" + csvrow[2] + "</td>\n")
-                        outfile.write("<td width=15%>" + csvrow[7] + "</td>\n")
-                        outfile.write("<td width=5%>" + csvrow[6] + "</td>\n")
-                        outfile.write("<td width=30%>" + csvrow[5] + "</td></tr>\n")
+
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr bgcolor=E0E0E0><td width=20%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + csvrow[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + csvrow[7] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                        outfile.write("<td width=30%>" + PreIOC + csvrow[5] + PostIOC + "</td></tr>\n")
+
             outfile.write("</table>\n")
             os.remove(filname)
 
@@ -1671,15 +1805,25 @@ def main():
                 for csvrow in csvread:
                     if len(csvrow) > 11:
                         reccount = reccount + 1
-                        outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + csvrow[0] + "</td>\n")
-                        outfile.write("<td width=5%>" + csvrow[2] + "</td>\n")
-                        outfile.write("<td width=10%>" + csvrow[5] + "</td>\n")
-                        outfile.write("<td width=5%>" + csvrow[3] + "</td>\n")
-                        outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + csvrow[8] + "</a> </td>\n")
-                        outfile.write("<td width=5%>" + csvrow[6] + "</td>\n")
-                        outfile.write("<td width=15%>" + csvrow[9] + "</td>\n")
-                        outfile.write("<td width=7%>" + csvrow[10] + "</td>\n")
-                        outfile.write("<td width=30%>" + csvrow[11] + "</td></tr>\n")
+
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
+                        outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
+                        outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
 
                         # Write out IP Address for Bulk Lookup 
                         ipsfileall.write(csvrow[8] + "\n")
@@ -1717,6 +1861,16 @@ def main():
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
                 if innline.startswith("  TCP ") or innline.startswith("  UDP "):
+
+                    # Is it in our IOC List?
+                    if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    # Parse out individual pieces
                     ConnSplit = innline.split()
                     if len(ConnSplit) == 5:
                         if reccount > 0:
@@ -1725,13 +1879,13 @@ def main():
                         LocSplit = ConnSplit[1].rsplit(':',1)
                         RmtSplit = ConnSplit[2].rsplit(':',1)
 
-                        outfile.write("<tr><td width=5%>" + ConnSplit[0] + "</td>\n")
-                        outfile.write("<td width=15%>" + LocSplit[0] + "</td>\n")
-                        outfile.write("<td width=5%>" + LocSplit[1] + "</td>\n")
-                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + RmtSplit[0] + ">" + RmtSplit[0] + "</a> </td>\n")
-                        outfile.write("<td width=5%>" + RmtSplit[1] + "</td>\n")
-                        outfile.write("<td width=10%>" + ConnSplit[3] +  "</td>\n")
-                        outfile.write("<td width=5%>" + ConnSplit[4] +  "</td>\n")
+                        outfile.write("<tr><td width=5%>" + PreIOC + ConnSplit[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + LocSplit[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + LocSplit[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + RmtSplit[0] + ">" + PreIOC + RmtSplit[0] + PostIOC + "</a> </td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + RmtSplit[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%>" + PreIOC + ConnSplit[3] + PostIOC +  "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + ConnSplit[4] + PostIOC +  "</td>\n")
                         reccount = reccount + 1
 
                     elif len(ConnSplit) == 4:
@@ -1741,13 +1895,13 @@ def main():
                         LocSplit = ConnSplit[1].rsplit(':',1)
                         RmtSplit = ConnSplit[2].rsplit(':',1)
 
-                        outfile.write("</tr><tr><td width=5%>" + ConnSplit[0] + "</td>\n")
-                        outfile.write("<td width=15%>" + LocSplit[0] + "</td>\n")
-                        outfile.write("<td width=5%>" + LocSplit[1] + "</td>\n")
-                        outfile.write("<td width=15%>" + RmtSplit[0] + "</td>\n")
-                        outfile.write("<td width=5%>" + RmtSplit[1] + "</td>\n")
-                        outfile.write("<td width=10%> - </td>\n")
-                        outfile.write("<td width=5%>" + ConnSplit[3] +  "</td>\n")
+                        outfile.write("</tr><tr><td width=5%>" + PreIOC + ConnSplit[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + LocSplit[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + LocSplit[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=15%>" + PreIOC + RmtSplit[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + RmtSplit[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%>" + PreIOC + "-" + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + ConnSplit[3] + PostIOC + "</td>\n")
                         reccount = reccount + 1
                 else:
                     if reccount > 0:
@@ -1797,18 +1951,26 @@ def main():
             for innline in innfile:
                 reccount = reccount + 1
 
+                # Is it in our IOC List?
+                if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                    PreIOC = " <b><font color=red>"
+                    PostIOC = "</font></b> "
+                else: 
+                    PreIOC = " "
+                    PostIOC = " "
+
                 strIndex = innline.find("LastWrite")
                 if strIndex > 0:
                     outfile.write("</td></tr><tr><td style=\"text-align: left\">\n")
-                    outfile.write("<b>Name: </b>" + innline[0:strIndex] + "<br>\n")
-                    outfile.write("<b>Last: </b>" + innline[strIndex+10:] + "<br>\n")
+                    outfile.write("<b>Name: </b>" + PreIOC + innline[0:strIndex] + PostIOC + "<br>\n")
+                    outfile.write("<b>Last: </b>" + PreIOC + innline[strIndex+10:] + PostIOC + "<br>\n")
                 elif innline.startswith("Hash: "):
                     if len(innline) > 32:
-                        outfile.write("<b>Hash: </b><A href=https://www.virustotal.com/#/search/" + innline[6:].strip() + ">" + innline[6:].strip() + "</a><br>\n")
+                        outfile.write("<b>Hash: </b><A href=https://www.virustotal.com/#/search/" + innline[6:].strip() + ">" + PreIOC + innline[6:].strip() + PostIOC + "</a><br>\n")
                     else:
                         outfile.write("<b>Hash: </b>Unknown<br>\n")
                 else:
-                    outfile.write(innline.strip() + "<br>\n")
+                    outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
 
             outfile.write("</td></tr></table>\n")
             innfile.close()
@@ -1865,9 +2027,20 @@ def main():
                 for csvrow in csvread:
                     if len(csvrow) > 3:
                         reccount = reccount + 1
-                        outfile.write("<tr bgcolor=E0E0E0><td width=15%>" + csvrow[3] + "</td>\n")
-                        outfile.write("<td width=5%>" + csvrow[2] + "</td>\n")
-                        outfile.write("<td width=30%>" + csvrow[0] + "</td></tr>\n")
+
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr bgcolor=E0E0E0><td width=15%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                        outfile.write("<td width=30%>" + PreIOC + csvrow[0] + PostIOC + "</td></tr>\n")
+
             outfile.write("</table>\n")
 
             if reccount < 2:
@@ -1910,13 +2083,22 @@ def main():
                 reccount = 0 
                 innfile = open(curfile, encoding='utf8', errors="replace")
                 for innline in innfile:
+                    # Is it in our IOC List?
+                    if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
                     if innline.startswith("shellfolders "):
                         outfile.write("<h2>" + innline.strip()  + "</h2><br>\n")
                     elif innline.startswith("UserAssist"):
                         outfile.write("<hr><h2>" + innline.strip()  + "</h2><br>\n")
                     else:
-                        outfile.write(innline.strip()  + "<br>\n")
+                        outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
                     reccount = reccount + 1
+
                 innfile.close()
                 outfile.write("</td></tr></table>\n")
                 os.remove(curfile)
@@ -1973,8 +2155,17 @@ def main():
 
                     innfile = open(curfile, encoding='utf8', errors="replace")
                     for innline in innfile:
-                        outfile.write(innline.strip()  + "<br>\n")
+                        # Is it in our IOC List?
+                        if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
                         reccount = reccount + 1
+
                     innfile.close()
                     outfile.write("</td></tr></table>\n")
 
@@ -2062,15 +2253,24 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " width=25%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=23%>" + csvrow[15] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + csvrow[18] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[5] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=7%>" + csvrow[6] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " width=25%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=23%>" + PreIOC + csvrow[15] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[18] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
 
@@ -2134,17 +2334,28 @@ def main():
                 for csvrow in csvread:
                     if len(csvrow) > 10:
                         if "currentversion\\run" in csvrow[1].lower():
-                            outfile.write("<tr><td width=10%>" + csvrow[0] + "</td>\n")
-                            outfile.write("<td width=30%>" + csvrow[1] + "</td>\n")
-                            outfile.write("<td width=10%>" + csvrow[2] + "</td>\n")
-                            outfile.write("<td width=30%>" + csvrow[8] + "<hr>" + csvrow[10] + "</td>\n")
+
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><td width=10%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                            outfile.write("<td width=30%>" + PreIOC + csvrow[1] + PostIOC + "</td>\n")
+                            outfile.write("<td width=10%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                            outfile.write("<td width=30%>" + PreIOC + csvrow[8] + PostIOC + "<hr>" + csvrow[10] + "</td>\n")
                             if len(csvrow) > 11:
-                                outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[11] + ">" + csvrow[11] + "</a> </td>\n")
+                                outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[11] + ">" + PreIOC + csvrow[11] + PostIOC + "</a> </td>\n")
                             else:
                                 outfile.write("<td width=15%> No MD5 Available </td>\n")
-                            outfile.write("<td width=5%>" + csvrow[3] + "</td></tr>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td></tr>\n")
 
                             reccount = reccount + 1
+
             outfile.write("</table>\n")
 
             if reccount < 2:
@@ -2194,18 +2405,28 @@ def main():
                             tdtr = "td"
                             Hash = "No MD5 Available"
 
-                        outfile.write("<tr><" + tdtr + " width=10%>" + csvrow[0] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=30%>" + csvrow[1] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=10%>" + csvrow[2] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=30%>" + csvrow[8] + "<hr>" + csvrow[10] + "</" + tdtr + ">\n")
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr><" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[8] + "<hr>" + csvrow[10] + PostIOC + "</" + tdtr + ">\n")
                         if len(csvrow) > 11:
-                            outfile.write("<" + tdtr + " width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[11] + ">" + csvrow[11] + "</a> </td>\n")
+                            outfile.write("<" + tdtr + " width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[11] + ">" + PreIOC + csvrow[11] + PostIOC + "</a> </td>\n")
 
                             # Write out Hash for Bulk Lookup 
                             hshfileall.write(csvrow[11] + "\n")
                         else:
                             outfile.write("<" + tdtr + " width=15%> " + Hash + " </td>\n")
-                        outfile.write("<" + tdtr + " width=5%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+
+                        outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
                         reccount = reccount + 1
 
@@ -2261,10 +2482,19 @@ def main():
                         else:
                             tdtr = "td"
 
-                        outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=30%>" + csvrow[1] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=45%>" + csvrow[2] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=10%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=45%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
                         reccount = reccount + 1
 
@@ -2323,12 +2553,22 @@ def main():
                         else:
                             tdtr = "td"
 
-                        outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=25%>" + csvrow[1] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=30%>" + csvrow[2] + "</" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=30%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr><" + tdtr + " width=15%>"+ PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=25%>"+ PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=30%>"+ PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                        outfile.write("<" + tdtr + " width=30%>"+ PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
                         reccount = reccount + 1
+
             outfile.write("</table>\n")
             os.remove(filname)
 
@@ -2389,8 +2629,17 @@ def main():
 
                     innfile.close()
 
-                    outfile.write("<tr><td style=\"text-align: left\" width=40%>" + task_URI + "</td>\n")
-                    outfile.write("<td style=\"text-align: left\" width=60%>" + task_Command + "</td></tr>\n")
+                    # Is it in our IOC List?
+                    RowString = task_URI + task_Command 
+                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    outfile.write("<tr><td style=\"text-align: left\" width=40%>" + PreIOC + task_URI + PostIOC + "</td>\n")
+                    outfile.write("<td style=\"text-align: left\" width=60%>" + PreIOC + task_Command + PostIOC + "</td></tr>\n")
 
                     reccount = reccount + 1
 
@@ -2472,35 +2721,49 @@ def main():
                     RecType = innline[28:]
                     writeRow = 4
 
+                # Is it in our IOC List?
+                if any(AnyIOC in RecType.strip().lower() for AnyIOC in IOCList):
+                    PreIOC = " <b><font color=red>"
+                    PostIOC = "</font></b> "
+                else: 
+                    PreIOC = " "
+                    PostIOC = " "
+
+                if any(AnyIOC in RecName.strip().lower() for AnyIOC in IOCList):
+                    PreIOC2 = " <b><font color=red>"
+                    PostIOC2 = "</font></b> "
+                else: 
+                    PreIOC2 = " "
+                    PostIOC2 = " "
+
 
                 if writeRow > 0:
                     outfile.write("<tr><td width=25%>" + DNSRecName.strip() + "</td>\n")
 
                     if writeRow == 1:
-                        outfile.write("<td width=25%>" + RecName.strip() + "</td>\n")
-                        outfile.write("<td width=25%>" + RecType.strip() + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC2 + RecName.strip() + PostIOC2 + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC + RecType.strip() + PostIOC + "</td>\n")
                         outfile.write("<td width=25%> NA </td></tr>\n")
                     elif writeRow == 2:
-                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + RecName.strip() + "</a> </td>\n")
-                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + RecType.strip() + "</a> </td>\n")
+                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + PreIOC2 + RecName.strip() + PostIOC2 + "</a> </td>\n")
+                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + PreIOC + RecType.strip() + PostIOC + "</a> </td>\n")
                         outfile.write("<td width=25%> A (Host) </td></tr>\n")
 
-                        # Write out IP Address for Bulk Lookup 
                         ipsfileall.write(RecType.strip() + "\n")
 
                         # Write out Domain for Bulk Lookup 
                         domfileall.write(RecName.strip() + "\n")
                     elif writeRow == 3:
-                        outfile.write("<td width=25%>" + RecName.strip() + "</td>\n")
-                        outfile.write("<td width=25%>" + RecType.strip() + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC2 + RecName.strip() + PostIOC2 + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC + RecType.strip() + PostIOC + "</td>\n")
                         outfile.write("<td width=25%> SRV Record </td></tr>\n")
                     elif writeRow == 4:
-                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + RecName.strip() + "</a> </td>\n")
-                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + RecType.strip() + "</a> </td>\n")
+                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecName.strip().lower() + ">" + PreIOC2 + RecName.strip() + PostIOC2 + "</a> </td>\n")
+                        outfile.write("<td width=25%> <A href=https://www.virustotal.com/#/search/" + RecType.strip() + ">" + PreIOC + RecType.strip() + PostIOC + "</a> </td>\n")
                         outfile.write("<td width=25%> PTR Record </td></tr>\n")
                     else:
-                        outfile.write("<td width=25%>" + RecName.strip() + "</td>\n")
-                        outfile.write("<td width=25%>" + RecType.strip() + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC2 + RecName.strip() + PostIOC2 + "</td>\n")
+                        outfile.write("<td width=25%>" + PreIOC + RecType.strip() + PostIOC + "</td>\n")
                         outfile.write("<td width=25%> Unknown </td></tr>\n")
 
                     RecName = ""                
@@ -2525,19 +2788,29 @@ def main():
 
                         if reccount == 0:
                             outfile.write("<tr><" + tdtr + " width=35%> " + csvrow[0] + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[3] + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " </" + tdtr + "></tr>\n")
                         else:
-                            outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + csvrow[0] + "</a> </" + tdtr + ">\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC2 = " <b><font color=red>"
+                                PostIOC2 = "</font></b> "
+                            else: 
+                                PreIOC2 = " "
+                                PostIOC2 = " "
+
+                            outfile.write("<tr><" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[0] + ">" + PreIOC2 + csvrow[0] + PostIOC2 + "</a> </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> + PreIOC2 " + csvrow[1] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> + PreIOC2 " + csvrow[2] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>  + PreIOC2" + csvrow[3] + PostIOC2 + " </" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[4] + ">" + PreIOC2 + csvrow[4] + PostIOC2 + "</a> </" + tdtr + "></tr>\n")
+
                             # Write out Domain for Bulk Lookup 
                             domfileall.write(csvrow[0].strip() + "\n")
 
-                        outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")
-                        outfile.write("<" + tdtr + " width=10%> " + csvrow[3] + " </" + tdtr + ">\n")
-
-                        if reccount == 0:
-                            outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " </" + tdtr + "></tr>\n")
-                        else:
-                            outfile.write("<" + tdtr + " width=35%> <A href=https://www.virustotal.com/#/search/" + csvrow[4] + ">" + csvrow[4] + "</a> </" + tdtr + "></tr>\n")
                             # Write out IP Address for Bulk Lookup 
                             ipsfileall.write(csvrow[4].strip() + "\n")
 
@@ -2588,24 +2861,33 @@ def main():
 
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
+                # Is it in our IOC List?
+                if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                    PreIOC = " <b><font color=red>"
+                    PostIOC = "</font></b> "
+                else: 
+                    PreIOC = " "
+                    PostIOC = " "
+
                 if innline.startswith("Source file: "):
                     outfile.write("<tr><td style=\"text-align: left\">\n")
-                    outfile.write("<b>" + innline.strip() + "</b><br>\n")
+                    outfile.write("<b>" + PreIOC + innline.strip() + PostIOC + "</b><br>\n")
                     reccount = reccount + 1
 
                 elif innline.startswith("Version: "):
-                    outfile.write(innline.strip() + "<br>\n")
+                    outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
 
                 elif innline.startswith("File size: "):
-                    outfile.write(innline.strip() + "<br>\n")
+                    outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
 
                 elif innline.startswith("File name: "):
-                    outfile.write(innline.strip() + "<br>\n")
+                    outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
 
                 elif innline.startswith("Deleted on:"):
-                    outfile.write(innline.strip() + "</td></tr>\n")
+                    outfile.write(PreIOC + innline.strip() + PostIOC + "</td></tr>\n")
 
-            outfile.write(innline.strip() + "</table>\n")
+            outfile.write(PreIOC + innline.strip() + PostIOC + "</table>\n")
+
             innfile.close()
             os.remove(filname)
 
@@ -2697,12 +2979,22 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=25%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=30%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=30%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=25%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
+
                 outfile.write("</table>\n")
                 os.remove(ChName)
 
@@ -2733,10 +3025,19 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=25%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=30%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=30%>" + csvrow[3] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=25%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2769,12 +3070,21 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=10%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=40%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=40%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2807,12 +3117,21 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2845,12 +3164,21 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2883,12 +3211,21 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=25%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2921,12 +3258,21 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=35%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=15%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=35%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
                 outfile.write("</table>\n")
@@ -2959,14 +3305,24 @@ def main():
                             else:
                                 tdtr = "td"
 
-                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=5%>" + csvrow[1] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[2] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[3] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[4] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " valign=top width=20%>" + csvrow[5] + "</" + tdtr + "></tr>\n")
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             reccount = reccount + 1
+
                 outfile.write("</table>\n")
                 os.remove(ChName)
 
@@ -3038,7 +3394,16 @@ def main():
         with open(ipsnameall) as ipsfileall:
             for ipsline in ipsfileall:
                 if ipsline != "\n" and ipsline != "0.0.0.0\n" and ipsline != "::\n" and ipsline not in ipsset:
-                    outfile.write(ipsline + "<br>")
+                    # Is it in our IOC List?
+                    if any(AnyIOC in ipsline.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    outfile.write(PreIOC + ipsline + PostIOC + "<br>")
+
                     ipsset.add(ipsline)
                     reccount = reccount + 1
                 else:
@@ -3081,7 +3446,16 @@ def main():
         with open(hshnameall) as hshfileall:
             for hshline in hshfileall:
                 if hshline != "\n" and hshline != "MD5\n" and hshline not in hshset:
-                    outfile.write(hshline + "<br>")
+                    # Is it in our IOC List?
+                    if any(AnyIOC in hshline.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    outfile.write(PreIOC + hshline + PostIOC + "<br>")
+
                     hshset.add(hshline)
                     reccount = reccount + 1
                 else:
@@ -3124,7 +3498,16 @@ def main():
         with open(domnameall) as domfileall:
             for domline in domfileall:
                 if domline != "\n" and domline != "MD5\n" and domline not in domset:
-                    outfile.write(domline + "<br>")
+                    # Is it in our IOC List?
+                    if any(AnyIOC in domline.lower() for AnyIOC in IOCList):
+                        PreIOC = " <b><font color=red>"
+                        PostIOC = "</font></b> "
+                    else: 
+                        PreIOC = " "
+                        PostIOC = " "
+
+                    outfile.write(PreIOC + domline + PostIOC + "<br>")
+
                     domset.add(domline)
                     reccount = reccount + 1
                 else:
