@@ -2999,12 +2999,11 @@ def main():
                                         PreIOC = " "
                                         PostIOC = " "
 
-                                    outfile.write("<tr><" + tdtr + " width=10%>" + PreIOC + csvrow[5] + "</" + tdtr + ">\n")
+                                    outfile.write("<tr><" + tdtr + " width=11%>" + PreIOC + csvrow[5] + "</" + tdtr + ">\n")
                                     outfile.write("<" + tdtr + " width=50%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[8] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[9] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[10] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[11] + PostIOC + "</" + tdtr + "></tr>\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[15] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[16] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[11] + PostIOC + "</" + tdtr + "></tr>\n")
 
                                     reccount = reccount + 1
 

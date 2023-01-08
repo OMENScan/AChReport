@@ -43,6 +43,7 @@
 #   v0.99d - Minor Bug Fixes                                          #
 #   v0.99e - Add Raw XML Sched Task Parsing                           #
 #   v0.99f - Add IOC Search                                           #
+#   v0.99g - Shell Bags Processing using Eric Zimmerman's SBECmd      #
 ####################################################################### 
 import os
 import sys
@@ -182,7 +183,7 @@ def main():
     RunAllAll = RunSmlDel = RunMedDel = RunLrgDel = RunLrgAct = RunTmpAct = RunTmpDel = 0
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
-    RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = 0
+    RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = RunShlBag = 0
 
     HasIOCs = 0
 
@@ -301,6 +302,9 @@ def main():
             elif cfgline.startswith("Run:PShelLog"):
                 RunPwsLog = 1
 
+            elif cfgline.startswith("Run:ShellBags"):
+                RunShlBag = 1
+
             elif cfgline.startswith("IOC:"):
                 if HasIOCs == 0:
                     print("[+] Adding IOCs for Searching...")
@@ -352,6 +356,10 @@ def main():
     for curfile in os.listdir("."):
         if curfile.startswith("shlasst."):
             os.remove(curfile)
+
+    if os.path.isdir(".\\ShellBags"):
+        for curfile in os.listdir(".\\ShellBags"):
+            os.remove(".\\ShellBags\\" + curfile)
 
     ChSwSubDir = ""
     for ChName in glob.glob('.\\**\*security_audit_log_was_cleared.csv', recursive=True):
@@ -724,6 +732,9 @@ def main():
 
     if RunAllAll == 1 or RunUsrAst == 1:
         outfile.write("<td width=5%> <a href=#UserAssist>UsrAst</a> </td>\n")
+
+    if RunAllAll == 1 or RunShlBag == 1:
+        outfile.write("<td width=5%> <a href=#ShellBags>ShlBg</a> </td>\n")
 
     if RunAllAll == 1 or RunIPCons == 1:
         outfile.write("<td width=5%> <a href=#IPConn>IPCon</a> </td>\n")
@@ -2906,6 +2917,114 @@ def main():
 
     else:
         print("[+] Bypassing Recycle Bin ($Recycle.Bin) Information...")
+
+
+    ###########################################################################
+    # Run Eric Zimmermans Shell Bags Parser - Use -d to get all dirs          #
+    ###########################################################################
+    if (RunAllAll == 1 or RunShlBag == 1):
+        print("[+] Checking for Eric Zimmerman SBECmd...")
+
+        if os.path.isfile(".\\SBECmd\\SBECmd.exe") == False:
+            print("[?] Shell Bags Explorer - SBECmd executable not found...  Would you like to Download it...")
+            YesOrNo = input("[?] Y/N > ")
+
+            if YesOrNo.upper() == "Y":
+                print("[+] Downloading Eric Zimmerman Shell Bags Explorer...")
+
+                if not os.path.exists('.\\SBECMD'):
+                    os.makedirs('.\\SBECMD')
+
+                ShlBUrl = 'https://f001.backblazeb2.com/file/EricZimmermanTools/SBECmd.zip'
+                ShlBReq = requests.get(ShlBUrl, allow_redirects=True)
+                open('.\\SBECmd\\SBECmd.zip', 'wb').write(ShlBReq.content)
+
+                print("[+] Unzipping Shell Bags Explorer - SBECmd...")
+                with ZipFile('.\\SBECMD\\SBECmd.zip', 'r') as zipObj:
+                    # Extract all the contents of zip file in current directory
+                    zipObj.extractall(path='.\\SBECmd')
+            else:
+                print("[!] Shell Bags Explorer Download Bypassed...")
+
+
+        if os.path.isfile(".\\SBECmd\\SBECmd.exe"):
+            print("[+] Shell Bags Explorer executable found")
+            print("[+] Running Shell Bags Explorer against all Collection directories...")
+
+            ShlBSubDir = ""
+
+            ShlName = dirname
+            cmdexec = ".\\SBECmd\\SBECmd.exe -d " + ShlName + " --csv .\ShellBags --nl"
+            returned_value = os.system(cmdexec)
+
+
+            outfile.write("<a name=ShellBags></a>\n")
+            outfile.write("<input class=\"collapse\" id=\"id31\" type=\"checkbox\" checked>\n")
+            outfile.write("<label for=\"id31\">\n")
+            outfile.write("<H2>Shell Bags Output</H2>\n")
+            outfile.write("</label><div><hr>\n")
+
+            outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed Eric Zimmermans \n")
+            outfile.write("Shell Bags Explorer Data.  Shell Bags Explorer parses the Shell Bags Registry \n")
+            outfile.write("entries in NTUSER.DAT and USRCLASS.DAT files.  Shell Bags are useful in identifying\n")
+            outfile.write("directory accesses by each user/profile.</font></i></p>\n")
+
+            ###########################################################################
+            # Parse all SBECmd csv files                                              #
+            ###########################################################################
+            if os.path.isdir(".\\ShellBags"):
+                for SBName in os.listdir(".\ShellBags"):
+
+                    if SBName.endswith(".csv"):
+                        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                        outfile.write("<p><i><font color=firebrick>Processing: " + SBName + " </font></i></p>\n")
+
+                        reccount = 0
+                        with open(".\\ShellBags\\" + SBName, 'r', encoding='utf8', errors="replace") as csvfile:
+                            csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                            for csvrow in csvread:
+                                if len(csvrow) > 3:
+                                    if reccount == 0:
+                                        tdtr = "th"
+                                    else:
+                                        tdtr = "td"
+
+                                    # Is it in our IOC List?
+                                    RowString = ' '.join(map(str, csvrow))
+                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                                        PreIOC = " <b><font color=red>"
+                                        PostIOC = "</font></b> "
+                                    else: 
+                                        PreIOC = " "
+                                        PostIOC = " "
+
+                                    outfile.write("<tr><" + tdtr + " width=11%>" + PreIOC + csvrow[5] + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=50%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[15] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[16] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[11] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                    reccount = reccount + 1
+
+                        outfile.write("</table>\n")
+                        os.remove(".\\ShellBags\\" + SBName)
+
+                        if reccount < 2:
+                            outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                        else:
+                            outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+
+                outfile.write("</div>\n")
+
+            else:
+                print("[!] No Shell Bags Parsed!  Bypassing Shell Bags Processing...")
+
+        else:
+            print("[!] Shell Bags Explorer Executable not found!  Bypassing Shell Bags Processing...")
+
+    else:
+        print("[!] Bypassing Shell Bags Processing...")
 
 
     ###########################################################################
