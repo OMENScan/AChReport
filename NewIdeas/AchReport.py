@@ -54,6 +54,7 @@ import ctypes
 import requests
 import glob
 import shutil
+import datetime
 from zipfile import ZipFile
 
 parser = argparse.ArgumentParser(description="Format AChoir Output into a Report")
@@ -92,6 +93,16 @@ def main():
 
 
     print("[+] Root AChoir Dir: " + dirleft)
+
+
+    ###########################################################################
+    # Get the local time zone - some utils use local instead of UTC           #
+    ###########################################################################
+    now = datetime.datetime.now()
+    local_now = now.astimezone()
+    local_tz = local_now.tzinfo
+    local_tzname = local_tz.tzname(local_now)
+    print("[+] Local Times Zone: " + local_tzname)
 
 
     ###########################################################################
@@ -575,16 +586,16 @@ def main():
             # Parse the Events                                                        #
             ###########################################################################
             print("[+] Parsing Security Event Logs...")
-            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
+            cmdexec = "LogParser.exe \"Select to_utctime(Timegenerated) AS Date, EXTRACT_TOKEN(Strings, 1, '|') as Machine, EXTRACT_TOKEN(Strings, 5, '|') as LoginID, EXTRACT_TOKEN(Strings, 6, '|') as LoginMachine, EXTRACT_TOKEN(Strings, 8, '|') as LogonType, EXTRACT_TOKEN(Strings, 18, '|') as RemoteIP from Security1.evtx where eventid=4624 AND LogonType='10'\" -i:evt -o:csv -q > RDPGood.csv"
             returned_value = os.system(cmdexec)
 
-            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(Strings, 5, '|') as LoginID from Security1.evtx where eventid=4625\" -i:evt -o:csv -q > SecEvt4625.csv"
+            cmdexec = "LogParser.exe \"Select to_utctime(Timegenerated) AS Date, EXTRACT_TOKEN(Strings, 5, '|') as LoginID from Security1.evtx where eventid=4625\" -i:evt -o:csv -q > SecEvt4625.csv"
             returned_value = os.system(cmdexec)
 
-            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, EXTRACT_TOKEN(strings, 0, '|') AS ServiceName, EXTRACT_TOKEN(strings, 1, '|') AS ServicePath, EXTRACT_TOKEN(strings, 4, '|') AS ServiceUser FROM System1.evtx WHERE EventID = 7045\" -i:evt -o:csv -q > SysEvt7045.csv"
+            cmdexec = "LogParser.exe \"Select to_utctime(Timegenerated) AS Date, EXTRACT_TOKEN(strings, 0, '|') AS ServiceName, EXTRACT_TOKEN(strings, 1, '|') AS ServicePath, EXTRACT_TOKEN(strings, 4, '|') AS ServiceUser FROM System1.evtx WHERE EventID = 7045\" -i:evt -o:csv -q > SysEvt7045.csv"
             returned_value = os.system(cmdexec)
 
-            cmdexec = "LogParser.exe \"Select TimeGenerated AS Date, SourceName, EventCategoryName, Message FROM Security1.evtx WHERE EventID = 4698\" -i:evt -o:csv -q > SecEvt4698.csv"
+            cmdexec = "LogParser.exe \"Select to_utctime(Timegenerated) AS Date, SourceName, EventCategoryName, Message FROM Security1.evtx WHERE EventID = 4698\" -i:evt -o:csv -q > SecEvt4698.csv"
             returned_value = os.system(cmdexec)
         else:
             print("[!] Error Parsing Event Log Entries...")
@@ -914,7 +925,7 @@ def main():
             outfile.write("may indicate that small data files were created on the endpoint to \n")
             outfile.write("exfiltrate data - and then those files were deleted. Look through these \n")
             outfile.write("files to see where they were located, and what their File Names were to \n")
-            outfile.write("determine if they look suspicious.</font></i></p>\n")
+            outfile.write("determine if they look suspicious. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -984,7 +995,7 @@ def main():
             outfile.write("may indicate that small data files were created on the endpoint to \n")
             outfile.write("exfiltrate data - and then those files were deleted. Look through these \n")
             outfile.write("files to see where they were located, and what their File Names were to \n")
-            outfile.write("determine if they look suspicious.</font></i></p>\n")
+            outfile.write("determine if they look suspicious. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -1054,7 +1065,7 @@ def main():
             outfile.write("may indicate that large data files were created on the endpoint to \n")
             outfile.write("exfiltrate data - and then those files were deleted. Look through these \n")
             outfile.write("files to see where they were located, and what their File Names were to \n")
-            outfile.write("determine if they look suspicious.</font></i></p>\n")
+            outfile.write("determine if they look suspicious. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -1126,7 +1137,7 @@ def main():
             outfile.write("may indicate that large data files were created on the endpoint to \n")
             outfile.write("exfiltrate data.  Look through these \n")
             outfile.write("files to see where they were located, and what their File Names were to \n")
-            outfile.write("determine if they look suspicious.</font></i></p>\n")
+            outfile.write("determine if they look suspicious. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -1198,7 +1209,7 @@ def main():
             outfile.write("downloaded and executed from Temp Directories.  This can indicate normal behavior, however \n")
             outfile.write("malware is often executed from Temp Directories.  Review these\n")
             outfile.write("files to see if they appear to be malicious - a good indicator is if the executable has a \n")
-            outfile.write("name that appears to be randomly generated.</font></i></p>\n")
+            outfile.write("name that appears to be randomly generated. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -1273,7 +1284,7 @@ def main():
             outfile.write("downloaded, executed, then deleted from Temp Directories.  This can indicate normal behavior, however \n")
             outfile.write("malware is often executed from Temp Directories.  Review these\n")
             outfile.write("files to see if they appear to be malicious - a good indicator is if the deleted executable has a \n")
-            outfile.write("name that appears to be randomly generated.</font></i></p>\n")
+            outfile.write("name that appears to be randomly generated. (Note: Parsed $MFT TZ is UTC)</font></i></p>\n")
 
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><tr><th width=40%> Full Path (+/-)</th>\n")
@@ -1352,7 +1363,7 @@ def main():
         outfile.write("Windows Security Event Log.  These Entries indicate that someone remotely \n")
         outfile.write("Logged in to this endpoint using RDP.  This may be completely normal - or it may \n")
         outfile.write("indicate that a hostile actor has compromised RDP credentials. Focus on the RemoteIPs \n")
-        outfile.write("to determine if they look suspicious.</font></i></p>\n")
+        outfile.write("to determine if they look suspicious. (Note: Parsed EVTX TZ is UTC)</font></i></p>\n")
 
         reccount = 0
         filname = "RDPGood.csv"
@@ -1433,7 +1444,7 @@ def main():
         outfile.write("machine.  High numbers of failed logins can indicate BRUTE FORCE Hacking, and small \n")
         outfile.write("numbers of attempts against MANY DIFFERENT UserIDs can indicate PASSWORD SPRAYING.\n")
         outfile.write(" Focus on both the number of attempts and the UserIDs to see if the failed logins \n")
-        outfile.write(" look suspicious.</font></i></p>\n")
+        outfile.write(" look suspicious. (Note: Parsed EVTX TZ is UTC)</font></i></p>\n")
 
         reccount = 0
         filname = "SecEvt4625.csv"
@@ -2541,7 +2552,7 @@ def main():
         outfile.write("This may be completely normal - or it may indicate that a hostile actor has installed \n")
         outfile.write("a hostile or malicious service. Focus on the Service Names (For instance Random Names) \n")
         outfile.write("and the Service Executables (for instance Powershell, WMIC, or other suspicious executables) \n")
-        outfile.write("which may indicate malicious intent.</font></i></p>\n")
+        outfile.write("which may indicate malicious intent. (Note: Parsed EVTX TZ is UTC)</font></i></p>\n")
 
         reccount = 0
         filname = "SysEvt7045.csv"
@@ -2619,7 +2630,7 @@ def main():
         outfile.write("was scheduled. This may be completely normal - or it may indicate that a hostile actor has \n")
         outfile.write("scheduled a hostile or malicious task. Focus on the Task Names and Executables \n")
         outfile.write("(for instance Powershell, WMIC, or others suspicious executables) \n")
-        outfile.write("which may indicate malicious intent.</font></i></p>\n")
+        outfile.write("which may indicate malicious intent. (Note: Parsed EVTX TZ is UTC)</font></i></p>\n")
 
         reccount = 0
         filname = "SecEvt4698.csv"
