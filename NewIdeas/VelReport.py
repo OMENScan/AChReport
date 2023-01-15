@@ -45,6 +45,7 @@
 #   v0.99f - Add Raw XML Sched Task Parsing                           #
 #   v0.99g - Add IOC Search                                           #
 #   v0.99h - Shell Bags Processing using Eric Zimmerman's SBECmd      #
+#   v0.99i - Make Tables Sortable, Add TZ Information                 #
 ####################################################################### 
 import os
 import sys
