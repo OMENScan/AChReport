@@ -1673,7 +1673,7 @@ def main():
         filname = dirname + "\\brw\\BrowseHist.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -1695,11 +1695,18 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
 
                             # Write out Domain for Bulk Lookup 
                             url_split = csvrow[0].split('/')
@@ -1708,7 +1715,7 @@ def main():
 
                             reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -1750,13 +1757,13 @@ def main():
         filname = "WinPrefetchView.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=20%> FileName </th>\n")
-            outfile.write("<th width=15%> Created </th>\n")
-            outfile.write("<th width=15%> Modified </th>\n")
-            outfile.write("<th width=15%> Last Run </th>\n")
-            outfile.write("<th width=5%> Times </th>\n")
-            outfile.write("<th width=30%> Path </th></tr>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=20%> FileName (+/-)</th>\n")
+            outfile.write("<th width=15%> Created (+/-)</th>\n")
+            outfile.write("<th width=15%> Modified (+/-)</th>\n")
+            outfile.write("<th width=15%> Last Run (+/-)</th>\n")
+            outfile.write("<th width=5%> Times (+/-)</th>\n")
+            outfile.write("<th width=30%> Path (+/-)</th></tr></thead><tbody>\n")
 
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
@@ -1780,7 +1787,7 @@ def main():
                         outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
                         outfile.write("<td width=30%>" + PreIOC + csvrow[5] + PostIOC + "</td></tr>\n")
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
             os.remove(filname)
 
             if reccount < 2:
@@ -1824,16 +1831,16 @@ def main():
 
         if os.path.isfile(filname):
             print("[+] Reading CPorts Output File...")
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=13%> Process </th>\n")
-            outfile.write("<th width=5%> Prot. </th>\n")
-            outfile.write("<th width=10%> Local IP </th>\n")
-            outfile.write("<th width=5%> LPort </th>\n")
-            outfile.write("<th width=10%> Remote IP </th>\n")
-            outfile.write("<th width=5%> RPort </th>\n")
-            outfile.write("<th width=15%> RHost </th>\n")
-            outfile.write("<th width=7%> State </th>\n")
-            outfile.write("<th width=30%> Process Path </th></tr>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=13%> Process (+/-)</th>\n")
+            outfile.write("<th width=5%> Prot. (+/-)</th>\n")
+            outfile.write("<th width=10%> Local IP (+/-)</th>\n")
+            outfile.write("<th width=5%> LPort (+/-)</th>\n")
+            outfile.write("<th width=10%> Remote IP (+/-)</th>\n")
+            outfile.write("<th width=5%> RPort (+/-)</th>\n")
+            outfile.write("<th width=15%> RHost (+/-)</th>\n")
+            outfile.write("<th width=7%> State (+/-)</th>\n")
+            outfile.write("<th width=30%> Process Path (+/-)</th></tr></thead><tbody>\n")
 
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
@@ -1863,7 +1870,7 @@ def main():
                         # Write out IP Address for Bulk Lookup 
                         ipsfileall.write(csvrow[8] + "\n")
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No CPortsData Found! </font></b></p>\n")
@@ -1882,16 +1889,16 @@ def main():
 
         if os.path.isfile(filname):
             print("[+] Reading netstat -abno Output File...")
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<th width=5%> Prot. </th>\n")
-            outfile.write("<th width=15%> Local IP</th>\n")
-            outfile.write("<th width=5%> Local Port </th>\n")
-            outfile.write("<th width=15%> Remote IP </th>\n")
-            outfile.write("<th width=5%> Remote Port </th>\n")
-            outfile.write("<th width=10%> State </th>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><th width=5%> Prot. (+/-)</th>\n")
+            outfile.write("<th width=15%> Local IP (+/-)</th>\n")
+            outfile.write("<th width=5%> Local Port (+/-)</th>\n")
+            outfile.write("<th width=15%> Remote IP (+/-)</th>\n")
+            outfile.write("<th width=5%> Remote Port (+/-)</th>\n")
+            outfile.write("<th width=10%> State (+/-)</th>\n")
             outfile.write("<th width=5%> PID </th>\n")
             outfile.write("<th width=20%> Component </th>\n")
-            outfile.write("<th width=20%> Process </th></tr>\n")
+            outfile.write("<th width=20%> Process (+/-)</th></tr></thead><tbody>\n")
 
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
@@ -1942,7 +1949,7 @@ def main():
                     if reccount > 0:
                         outfile.write("<td width=20%>" + innline +  "</td>\n")
 
-            outfile.write("</tr></table>\n")
+            outfile.write("</tr></tbody></table>\n")
             innfile.close()
 
         else:
@@ -1977,10 +1984,15 @@ def main():
 
         reccount = 0
         filname = "AmCache.dat"
+        AmCName = " "
+        AmCLast = " "
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><td style=\"text-align: left\">\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+
+            outfile.write("<thead><th width=10%> Last (+/-)</th>\n")
+            outfile.write("<th width=60%> Name (+/-)</th>\n")
+            outfile.write("<th width=30%> Hash (+/-)</th></tr></thead><tbody>\n")
 
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
@@ -1996,18 +2008,31 @@ def main():
 
                 strIndex = innline.find("LastWrite")
                 if strIndex > 0:
-                    outfile.write("</td></tr><tr><td style=\"text-align: left\">\n")
-                    outfile.write("<b>Name: </b>" + PreIOC + innline[0:strIndex] + PostIOC + "<br>\n")
-                    outfile.write("<b>Last: </b>" + PreIOC + innline[strIndex+10:] + PostIOC + "<br>\n")
+                    AmCLast = innline[strIndex+10:]
+                    AmCName = innline[0:strIndex]
                 elif innline.startswith("Hash: "):
-                    if len(innline) > 32:
-                        outfile.write("<b>Hash: </b><A href=https://www.virustotal.com/#/search/" + innline[6:].strip() + ">" + PreIOC + innline[6:].strip() + PostIOC + "</a><br>\n")
-                    else:
-                        outfile.write("<b>Hash: </b>Unknown<br>\n")
-                else:
-                    outfile.write(PreIOC + innline.strip() + PostIOC + "<br>\n")
+                    outfile.write("<tr><td width=10%>" + PreIOC + AmCLast + PostIOC + "</td>\n")
+                    outfile.write("<td width=50%>" + PreIOC + AmCName + PostIOC + "</td>\n")
 
-            outfile.write("</td></tr></table>\n")
+                    if len(innline) > 32:
+                        outfile.write("<td width=30%> <A href=https://www.virustotal.com/#/search/" + innline[6:].strip() + ">" + PreIOC + innline[6:].strip() + PostIOC + "</a></td></tr>\n")
+                        AmCName = " "
+                        AmCLast = " "
+                    else:
+                        outfile.write("<td width=30%> Unknown</td></tr>\n")
+                        AmCName = " "
+                        AmCLast = " "
+
+                    reccount = reccount + 1
+
+                else:
+                    if len(innline) > 1:
+                        outfile.write("<td Colspan=\"3\" style=\"text-align:left\" width=100%>" + PreIOC + innline.strip() + PostIOC + "</td></tr>\n")
+                        reccount = reccount + 1
+                        AmCName = " "
+                        AmCLast = " "
+
+            outfile.write("</tbody></table>\n")
             innfile.close()
             os.remove(filname)
 
@@ -2052,10 +2077,10 @@ def main():
         filname = dirname + "\\sys\\UserAssist.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=13%> Modified Time </th>\n")
-            outfile.write("<th width=5%> Modified Count </th>\n")
-            outfile.write("<th width=30%> Item Name </th></tr>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=13%> Modified Time (+/-)</th>\n")
+            outfile.write("<th width=5%> Modified Count (+/-)</th>\n")
+            outfile.write("<th width=30%> Item Name (+/-)</th></tr></thead><tbody>\n")
 
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
@@ -2076,7 +2101,7 @@ def main():
                         outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
                         outfile.write("<td width=30%>" + PreIOC + csvrow[0] + PostIOC + "</td></tr>\n")
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -2272,7 +2297,7 @@ def main():
             reccount = 0
 
             if os.path.isfile(filname):
-                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
                 with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                     csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                     for csvrow in csvread:
@@ -2297,6 +2322,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " width=25%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=23%>" + PreIOC + csvrow[15] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[18] + PostIOC + "</" + tdtr + ">\n")
@@ -2307,9 +2336,12 @@ def main():
                             outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=7%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
 
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(filname)
 
                 if reccount < 2:
@@ -2356,13 +2388,13 @@ def main():
         filname = dirname + "\\arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=10%> Time </th>\n")
-            outfile.write("<th width=30%> Entry Location </th>\n")
-            outfile.write("<th width=10%> Entry </th>\n")
-            outfile.write("<th width=30%> Image Path <hr> Launch String</th>\n")
-            outfile.write("<th width=15%> MD5 </th>\n")
-            outfile.write("<th width=5%> Enabled </th></tr>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=10%> Time (+/-)</th>\n")
+            outfile.write("<th width=30%> Entry Location  (+/-)</th>\n")
+            outfile.write("<th width=10%> Entry  (+/-)</th>\n")
+            outfile.write("<th width=30%> Image Path  (+/-)<hr> Launch String</th>\n")
+            outfile.write("<th width=15%> MD5  (+/-)</th>\n")
+            outfile.write("<th width=5%> Enabled  (+/-)</th></tr></thead><tbody>\n")
 
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
@@ -2391,7 +2423,7 @@ def main():
 
                             reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 print("[!] No Run or RunOnce Information Found...")
@@ -2428,7 +2460,7 @@ def main():
         filname = dirname + "\\arn\\AutoRun.dat"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -2449,6 +2481,11 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
+                        if reccount == 0:
+                            outfile.write("<thead>\n")
+                            PostIOC += " (+/-)"
+
+
                         outfile.write("<tr><" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -2463,9 +2500,12 @@ def main():
 
                         outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                        if reccount == 0:
+                            outfile.write("</thead><tbody>\n")
+
                         reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 print("[!] No Autoruns Information Found...")
@@ -2507,7 +2547,7 @@ def main():
         filname = "SysEvt7045.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -2526,14 +2566,21 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
+                        if reccount == 0:
+                            outfile.write("<thead>\n")
+                            PostIOC += " (+/-)"
+
                         outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=45%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                        if reccount == 0:
+                            outfile.write("</thead><tbody>\n")
+
                         reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
             os.remove(filname)
 
             if reccount < 2:
@@ -2578,7 +2625,7 @@ def main():
         filname = "SecEvt4698.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -2597,14 +2644,21 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
+                        if reccount == 0:
+                            outfile.write("<thead>\n")
+                            PostIOC += " (+/-)"
+
                         outfile.write("<tr><" + tdtr + " width=15%>"+ PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=25%>"+ PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=30%>"+ PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                         outfile.write("<" + tdtr + " width=30%>"+ PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                        if reccount == 0:
+                            outfile.write("</thead><tbody>\n")
+
                         reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
             os.remove(filname)
 
             if reccount < 2:
@@ -2640,9 +2694,9 @@ def main():
             curdir = curCdir
 
         if os.path.isdir(curdir):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=40%> URI </th>\n")
-            outfile.write("<th width=60%> Command </th></tr>\n")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=40%> URI (+/-)</th>\n")
+            outfile.write("<th width=60%> Command (+/-)</th></tr></thead><tbody>\n")
 
             for root, dirs, files in os.walk(curdir):
                 for fname in files:
@@ -2678,7 +2732,7 @@ def main():
 
                     reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -2726,11 +2780,11 @@ def main():
         csvname = dirname + "\\sys\\DNSCache.csv"
 
         if os.path.isfile(filname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<tr><th width=25%> DNS Request </th>\n")
-            outfile.write("<th width=25%> Record Name </th>\n")
-            outfile.write("<th width=25%> Resolution </th>\n")
-            outfile.write("<th width=25%> Record Type </th></tr>\n")
+            outfile.write("table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=25%> DNS Request (+/-)</th>\n")
+            outfile.write("<th width=25%> Record Name (+/-)</th>\n")
+            outfile.write("<th width=25%> Resolution (+/-)</th>\n")
+            outfile.write("<th width=25%> Record Type (+/-)</th></tr></thead><tbody\n")
 
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
@@ -2810,11 +2864,11 @@ def main():
 
                 LastRec = innline.strip()
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
             innfile.close()
 
         elif os.path.isfile(csvname):
-            outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+            outfile.write("table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             with open(csvname, 'r', encoding='utf8', errors="replace") as csvfile:
                 csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
                 for csvrow in csvread:
@@ -2825,11 +2879,11 @@ def main():
                             tdtr = "td"
 
                         if reccount == 0:
-                            outfile.write("<tr><" + tdtr + " width=35%> " + csvrow[0] + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%> " + csvrow[3] + " </" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " </" + tdtr + "></tr>\n")
+                            outfile.write("<thead><tr><" + tdtr + " width=35%> " + csvrow[0] + " (+/-)</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[1] + " (+/-)</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[2] + " (+/-)</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%> " + csvrow[3] + " (+/-)</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=35%> " + csvrow[4] + " (+/-)</" + tdtr + "></tr></thead><tbody>\n")
                         else:
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
@@ -2854,7 +2908,7 @@ def main():
 
                         reccount = reccount + 1
 
-            outfile.write("</table>\n")
+            outfile.write("</tbody></table>\n")
 
             if reccount < 2:
                 outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
@@ -3003,8 +3057,8 @@ def main():
                 for SBName in os.listdir(".\ShellBags"):
 
                     if SBName.endswith(".csv"):
-                        outfile.write("<table border=1 cellpadding=5 width=100%>\n")
                         outfile.write("<p><i><font color=firebrick>Processing: " + SBName + " </font></i></p>\n")
+                        outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
 
                         reccount = 0
                         with open(".\\ShellBags\\" + SBName, 'r', encoding='utf8', errors="replace") as csvfile:
@@ -3025,15 +3079,22 @@ def main():
                                         PreIOC = " "
                                         PostIOC = " "
 
+                                    if reccount == 0:
+                                        outfile.write("<thead>\n")
+                                        PostIOC += " (+/-)"
+
                                     outfile.write("<tr><" + tdtr + " width=11%>" + PreIOC + csvrow[5] + "</" + tdtr + ">\n")
                                     outfile.write("<" + tdtr + " width=50%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                                     outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[15] + PostIOC + "</" + tdtr + ">\n")
                                     outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[16] + PostIOC + "</" + tdtr + ">\n")
                                     outfile.write("<" + tdtr + " width=13%>" + PreIOC + csvrow[11] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                                    if reccount == 0:
+                                        outfile.write("</thead><tbody>\n")
+
                                     reccount = reccount + 1
 
-                        outfile.write("</table>\n")
+                        outfile.write("</tbody></table>\n")
                         os.remove(".\\ShellBags\\" + SBName)
 
                         if reccount < 2:
@@ -3112,7 +3173,7 @@ def main():
             # Chainsaw: Audit Log Cleared                                             #
             ###########################################################################
             for ChName in glob.glob('.\\**\*security_audit_log_was_cleared.csv', recursive=True):
-                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Security Audit Event Logs Cleared:</font></i></p>\n")
 
                 reccount = 0
@@ -3134,14 +3195,21 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=25%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
 
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3158,7 +3226,7 @@ def main():
             # Chainsaw: System Log Cleared                                             #
             ###########################################################################
             for ChName in glob.glob('.\\**\*system_log_was_cleared.csv', recursive=True):
-                outfile.write("<table border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>System Audit Event Logs Cleared:</font></i></p>\n")
 
                 reccount = 0
@@ -3180,13 +3248,20 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=25%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3203,7 +3278,7 @@ def main():
             # Chainsaw: Suspicious Process Creation                                   #
             ###########################################################################
             for ChName in glob.glob('.\\**\*suspicious_process_creation.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Suspicious Process Creation:</font></i></p>\n")
 
                 reccount = 0
@@ -3225,6 +3300,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3232,8 +3311,11 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=40%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3250,7 +3332,7 @@ def main():
             # Chainsaw: Suspicious Registry Event                                     #
             ###########################################################################
             for ChName in glob.glob('.\\**\*suspicious_registry_event.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Suspicious Registry Event:</font></i></p>\n")
 
                 reccount = 0
@@ -3272,6 +3354,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3279,8 +3365,11 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3297,7 +3386,7 @@ def main():
             # Chainsaw: Suspicious File Creation                                      #
             ###########################################################################
             for ChName in glob.glob('.\\**\*suspicious_file_creation.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Suspicious File Creation:</font></i></p>\n")
 
                 reccount = 0
@@ -3319,6 +3408,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3326,8 +3419,11 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3344,7 +3440,7 @@ def main():
             # Chainsaw: User Added to Interesting Group                               #
             ###########################################################################
             for ChName in glob.glob('.\\**\*user_added_to_interesting_group.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>User Added to Interesting Group:</font></i></p>\n")
 
                 reccount = 0
@@ -3366,6 +3462,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3373,8 +3473,11 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=25%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3391,7 +3494,7 @@ def main():
             # Chainsaw: Windows Defender Detections                                   #
             ###########################################################################
             for ChName in glob.glob('.\\**\*windows_defender_detections.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Windows Defender Detections:</font></i></p>\n")
 
                 reccount = 0
@@ -3413,6 +3516,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3420,8 +3527,11 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=35%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3438,7 +3548,7 @@ def main():
             # Chainsaw: 4624 Logins                                                   #
             ###########################################################################
             for ChName in glob.glob('.\\**\*4624_logins.csv', recursive=True):
-                outfile.write("<table valign=top border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<table class=\"sortable\" valign=top border=1 cellpadding=5 width=100%>\n")
                 outfile.write("<p><i><font color=firebrick>Windows 4624 Logins:</font></i></p>\n")
 
                 reccount = 0
@@ -3460,6 +3570,10 @@ def main():
                                 PreIOC = " "
                                 PostIOC = " "
 
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
                             outfile.write("<tr><" + tdtr + " valign=top width=15%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=5%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
@@ -3467,9 +3581,12 @@ def main():
                             outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " valign=top width=20%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
 
+                            if reccount == 0:
+                                outfile.write("</thead><tbody>\n")
+
                             reccount = reccount + 1
 
-                outfile.write("</table>\n")
+                outfile.write("</tbody></table>\n")
                 os.remove(ChName)
 
                 if ChSwSubDir == "":
@@ -3671,11 +3788,43 @@ def main():
         print("[+] Bypassing Bulk Domains...")
 
 
-
     os.remove(ipsnameall)
     os.remove(domnameall)
     os.remove(hshnameall)
 
+
+
+    ###########################################################################
+    # Write out the IOCs configured in the .cfg file                          #
+    ###########################################################################
+    if HasIOCs == 1:
+        print("[+] Writing IOCs to Report...")
+
+        outfile.write("<a name=IOCList></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id32\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id32\">\n")
+        outfile.write("<H2>IOCs to Search For</H2>\n")
+        outfile.write("</label><div><hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir is listing the IOCs configured \n")
+        outfile.write("in the " + cfgname + "configuration file used for this report. If these IOCs are  \n")
+        outfile.write("found in the telemetry or artifacts, they will be higlighted in red in this report. \n")
+        outfile.write("Using IOCs helps to make relevant data easier to find by making it stand out. \n")
+        outfile.write("</b></font></i></p>\n")
+
+
+        reccount = 0
+
+        for thisIOC in IOCList:
+            outfile.write(thisIOC + "<br>\n")
+            reccount = reccount + 1
+
+        if reccount < 1:
+            outfile.write("<p><b><font color = red> No IOC Search Found! </font></b></p>\n")
+        else:
+            outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+
+        outfile.write("</div>\n")
 
 
     ###########################################################################
