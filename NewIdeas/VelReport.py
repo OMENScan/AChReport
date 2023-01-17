@@ -610,7 +610,7 @@ def main():
 
         exeName = dirleft + "\\SYS\\RBCmd.exe"
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\SYS\\RBCmd.exe -d " + dirname + "\\RBin >> RBin.dat" 
+            cmdexec = dirleft + "\\SYS\\RBCmd.exe --dt \"yyyy-MM-dd HH:mm:ss K\" -d " + dirname + "\\RBin >> RBin.dat" 
             returned_value = os.system(cmdexec)
         else:
             print("[!] RBCmd Recycle Bin Parser Not Found...")
@@ -3001,7 +3001,8 @@ def main():
             outfile.write("RBCmd.exe utility.  This utility provides you with basic information about\n")
             outfile.write("files that were found in the endpoint Recycle Bin (Deleted).  This can be perfectly\n")
             outfile.write("normal activity, or can indicate that an actor deleted files to hide their activity.\n")
-            outfile.write("Please note: Some actors have been known to hide malware in the Recycle Bin.</font></i></p>\n")
+            outfile.write("Please note: Some actors have been known to hide malware in the Recycle Bin. \n")
+            outfile.write("<font color=gray size=-1><br><br>Source: Parsed Recycle Bin, TZ is in +hh:mm format</font></font></i></p>\n")
 
             outfile.write("<table border=1 cellpadding=5 width=100%>\n")
 
