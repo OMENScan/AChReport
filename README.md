@@ -61,6 +61,9 @@ add IOC:1.2.3.4 in the configuration file, and anywhere that AChReport encounter
 that string, it will highlight the entry in RED. The goal is to make known indicators easy
 to identify in the report.
 
+# Table Sorting
+Tables in the AChReport are now sortable, using the most excellent sortable - a tiny, vanilla 
+JS table sorter.  Which can be found here: https://github.com/tofsjonas/sortable
 
 # Command Line Arguments
 
