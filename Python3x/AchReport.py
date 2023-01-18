@@ -1805,7 +1805,8 @@ def main():
         outfile.write("many times.  This is normal behavior and does not in-itself indicate hostile behavior. \n")
         outfile.write("However, a quick look at the prefetch files is a good way to see in anything executed \n")
         outfile.write("appears to be suspicious.  Review this section to see if anything looks out of the \n")
-        outfile.write("ordinary, or appears to be malicious.</font></i></p>\n")
+        outfile.write("ordinary, or appears to be malicious. \n")
+        outfile.write("<font color=gray size=-1><br><br>Source: Collected Prefetch files, TZ is UTC.</font></font></i></p>\n")
 
         reccount = 0
         filname = "WinPrefetchView.csv"
@@ -3310,10 +3311,11 @@ def main():
                                 PostIOC += " (+/-)"
 
                             outfile.write("<tr><" + tdtr + " width=20%>" + PreIOC + csvrow[0] + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=40%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=30%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
                             outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + "></tr>\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
                             if reccount == 0:
                                 outfile.write("</thead><tbody>\n")
