@@ -71,12 +71,27 @@ args = parser.parse_args()
 ###########################################################################
 # Where are the Artifacts, What is the Output File Name
 ###########################################################################
+Collect = "AChoirX"
 MFTFile = "\\RawData\\MFT-C"
 RegSoft = "\\Reg\\SOFTWARE"
 RegSyst = "\\Reg\\SYSTEM"
 RegUser = "\\Reg"
 AmCache = "\\Reg\\AmCache.hve"
 Prefetc = "\\Prf"
+EvtDir1 = "\\evt\\sys32"
+EvtDir2 = "\\evt\\nativ"
+Recycle = "\\RBin"
+Browser = "\\Brw\\BrowseHist.csv"
+IPConns = "\\Sys\\Cports.csv"
+UsrAsst = "\\Sys\\UserAssist.csv"
+Powersh = "\\Psh"
+LNKFile = "\\Lnk"
+AutoRun = "\\Arn\\AutoRun.dat"
+SchTsk1 = "\\Sch"
+SchTsk2 = "\\C\\Windows\\System32\\Tasks"
+DNSIpcf = "\\Sys\\IPCfgDNS.dat"
+DNSCach = "\\Sys\\DNSCache.csv"
+ShelBag = "\\Reg"
 
 cfgname = str(args.cfgname)
 dirname = str(args.dirname)
@@ -357,7 +372,67 @@ def main():
 
             elif cfgline.startswith("RegUser:"):
                 RegUser = cfgline[8:].strip()
-                print("[+] Prefetch Directory : " + RegUser)
+                print("[+] User Profiles Directory : " + RegUser)
+
+            elif cfgline.startswith("EvtDir1:"):
+                EvtDir1 = cfgline[8:].strip()
+                print("[+] Event Logs Directory 1: " + EvtDir1)
+
+            elif cfgline.startswith("EvtDir2:"):
+                EvtDir2 = cfgline[8:].strip()
+                print("[+] Event Logs Directory 2 (Alternate): " + EvtDir2)
+
+            elif cfgline.startswith("Recycle:"):
+                Recycle = cfgline[8:].strip()
+                print("[+] Recycle Bin: " + Recycle)
+
+            elif cfgline.startswith("Browser:"):
+                Browser = cfgline[8:].strip()
+                print("[+] Browser History: " + Browser)
+
+            elif cfgline.startswith("Collect:"):
+                Collect = cfgline[8:].strip()
+                print("[+] Triage Collector Data: " + Collect)
+
+            elif cfgline.startswith("IPConns:"):
+                IPConns = cfgline[8:].strip()
+                print("[+] IP Connection Data: " + IPConns)
+
+            elif cfgline.startswith("UsrAsst:"):
+                UsrAsst = cfgline[8:].strip()
+                print("[+] User Assist Data: " + UsrAsst)
+
+            elif cfgline.startswith("Powersh:"):
+                Powersh = cfgline[8:].strip()
+                print("[+] User Powershell Logs: " + Powersh)
+
+            elif cfgline.startswith("LNKFile:"):
+                LNKFile = cfgline[8:].strip()
+                print("[+] User LNK Files: " + LNKFile)
+
+            elif cfgline.startswith("AutoRun:"):
+                AutoRun = cfgline[8:].strip()
+                print("[+] Collected AutoRuns: " + AutoRun)
+
+            elif cfgline.startswith("SchTsk1:"):
+                SchTsk1 = cfgline[8:].strip()
+                print("[+] Scheduled Tasks Directory: " + SchTsk1)
+
+            elif cfgline.startswith("SchTsk2:"):
+                SchTsk2 = cfgline[8:].strip()
+                print("[+] Scheduled Tasks Directory 2 (Alternate): " + SchTsk2)
+
+            elif cfgline.startswith("DNSIpcf:"):
+                DNSIpcf = cfgline[8:].strip()
+                print("[+] DNS IPConfig Data: " + DNSIpcf)
+
+            elif cfgline.startswith("DNSCach:"):
+                DNSCach = cfgline[8:].strip()
+                print("[+] DNS Cache Data: " + DNSCach)
+
+            elif cfgline.startswith("ShelBag:"):
+                ShelBag = cfgline[8:].strip()
+                print("[+] Shell Bags Directory: " + ShelBag)
 
             elif cfgline.startswith("IOC:"):
                 if HasIOCs == 0:
@@ -568,12 +643,12 @@ def main():
         print("[+] Generating Event Log Entries...")
         print("[+] Generating RDP Success and Failure...")
 
-        EvtName = dirname + "\\evt\\sys32\\Security.evtx"
+        EvtName = dirname + EvtDir1 + "\\Security.evtx"
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
         else:
-            EvtName = dirname + "\\evt\\nativ\\Security.evtx"
+            EvtName = dirname + EvtDir2 + "\\Security.evtx"
             if os.path.isfile(EvtName):
                 cmdexec = "copy " + EvtName
                 returned_value = os.system(cmdexec)
@@ -584,12 +659,12 @@ def main():
 
         print("[+] Generating Service Installed (7045) Messages...")
 
-        EvtName = dirname + "\\evt\\sys32\\System.evtx"
+        EvtName = dirname + EvtDir1 + "\\System.evtx"
         if os.path.isfile(EvtName):
             cmdexec = "copy " + EvtName
             returned_value = os.system(cmdexec)
         else:
-            EvtName = dirname + "\\evt\\nativ\\System.evtx"
+            EvtName = dirname + EvtDir2 + "\\System.evtx"
             if os.path.isfile(EvtName):
                 cmdexec = "copy " + EvtName
                 returned_value = os.system(cmdexec)
@@ -642,7 +717,7 @@ def main():
 
         exeName = dirleft + "\\SYS\\RBCmd.exe"
         if os.path.isfile(exeName):
-            cmdexec = dirleft + "\\SYS\\RBCmd.exe --dt \"yyyy-MM-dd HH:mm:ss K\" -d " + dirname + "\\RBin >> RBin.dat" 
+            cmdexec = dirleft + "\\SYS\\RBCmd.exe --dt \"yyyy-MM-dd HH:mm:ss K\" -d " + dirname + Recycle + " >> RBin.dat" 
             returned_value = os.system(cmdexec)
         else:
             print("[!] RBCmd Recycle Bin Parser Not Found...")
@@ -1599,7 +1674,7 @@ def main():
         outfile.write("collection program for TZ. Note: Nirsoft Browsing History View will be source machines local Time.</font></font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + Browser
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -1678,7 +1753,7 @@ def main():
 
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + Browser
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -1757,7 +1832,7 @@ def main():
         outfile.write("collection program for TZ. Note: Nirsoft Browsing History View will be source machines local Time.</font></font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\brw\\BrowseHist.csv"
+        filname = dirname + Browser
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -1915,7 +1990,7 @@ def main():
         outfile.write("VirusTotal for your convenience.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\sys\\CPorts.csv"
+        filname = dirname + IPConns
 
         if os.path.isfile(filname):
             print("[+] Reading CPorts Output File...")
@@ -1945,23 +2020,40 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
-                        outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
-                        outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
-                        outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
-                        outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
-                        outfile.write("<td width=15%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
-                        outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
-                        outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
+                        if Collect.startswith("AChoir"):
+                            outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                            outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
+                            outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+                            outfile.write("<td width=15%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
+                            outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
+                            outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
 
-                        # Write out IP Address for Bulk Lookup 
-                        ipsfileall.write(csvrow[8] + "\n")
+                            # Write out IP Address for Bulk Lookup 
+                            ipsfileall.write(csvrow[8] + "\n")
+                        elif Collect.startswith("Velocir"):
+                            outfile.write("<tr bgcolor=E0E0E0><td width=5%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
+                            outfile.write("<td width=15%>" + PreIOC + csvrow[11] + PostIOC + "</td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[12] + PostIOC + "</td>\n")
+                            outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[13] + ">" + PreIOC + csvrow[13] + PostIOC + "</a> </td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[14] + PostIOC + "</td>\n")
+                            outfile.write("<td width=10%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
+                            outfile.write("<td width=5%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
+                            outfile.write("<td width=35%>" + PreIOC + csvrow[4] + PostIOC + "</td></tr>\n")
+
+                            # Write out IP Address for Bulk Lookup 
+                            ipsfileall.write(csvrow[13] + "\n")
+                        else:
+                            print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
+
 
             outfile.write("</tbody></table>\n")
 
             if reccount < 2:
-                outfile.write("<p><b><font color = red> No CPortsData Found! </font></b></p>\n")
+                outfile.write("<p><b><font color = red> No CPorts Data Found! </font></b></p>\n")
             else:
                 outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
         else:
@@ -2162,7 +2254,7 @@ def main():
         outfile.write("ordinary, or appears to be malicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\sys\\UserAssist.csv"
+        filname = dirname + UsrAsst
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -2287,7 +2379,7 @@ def main():
         print("[+] Reading PowerShell Logs Multiple User Profiles...")
         filcount = 0
 
-        curdir = dirname + "\\Psh"
+        curdir = dirname + Powersh
         #lencurdir = len(curdir)
         for root, dirs, files in os.walk(curdir):
             for fname in files:
@@ -2375,7 +2467,7 @@ def main():
             print("[+] LECmd executable found")
             print("[+] Parsing Desktop and Recent LNK Files from Multiple User Profiles...")
 
-            curdir = dirname + "\\Lnk"
+            curdir = dirname + LNKFile
             filname = "LNKFiles.csv"
             cmdexec = exeName + " -q -d " + curdir + " --dt \"yyyy-MM-dd HH:mm:ss K\" --csv .\\ --csvf " + filname 
             returned_value = os.system(cmdexec)
@@ -2473,7 +2565,7 @@ def main():
         outfile.write("look suspicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\arn\\AutoRun.dat"
+        filname = dirname + AutoRun
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -2545,7 +2637,7 @@ def main():
         outfile.write("look suspicious.</font></i></p>\n")
 
         reccount = 0
-        filname = dirname + "\\arn\\AutoRun.dat"
+        filname = dirname + AutoRun
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -2760,7 +2852,7 @@ def main():
 
         ###########################################################################
         # Most Collections are going to run AutoRuns - But Just in case we want   #
-        #  to collections the raw Scheduled Task XML File - This sectio will      #
+        #  to collections the raw Scheduled Task XML File - This section will     #
         #  Parse them.                                                            #
         ###########################################################################
         print("[+] Parsing Sched Tasks XML...")
@@ -2772,8 +2864,8 @@ def main():
         outfile.write("These for any suspicious scheduled tasks that could have hostile intent. </font></i></p>\n")
 
         reccount = 0
-        curdir = dirname + "\\sch"
-        curCdir = dirname + "\\C\\Windows\\System32\\Tasks"
+        curdir = dirname + SchTsk1
+        curCdir = dirname + SchTsk2
 
         ###########################################################################
         # Check for alternate location of Sched Task Collection                   #
@@ -2864,8 +2956,8 @@ def main():
         RecType = "None"
         RecName = "None"
         LastRec = ""
-        filname = dirname + "\\sys\\IPCfgDNS.dat"
-        csvname = dirname + "\\sys\\DNSCache.csv"
+        filname = dirname + DNSIpcf
+        csvname = dirname + DNSCach
 
         if os.path.isfile(filname):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
@@ -3123,7 +3215,7 @@ def main():
 
             ShlBSubDir = ""
 
-            ShlName = dirname
+            ShlName = dirname + ShelBag
             cmdexec = ".\\SBECmd\\SBECmd.exe -d " + ShlName + " --csv .\ShellBags --nl --dt \"yyyy-MM-dd HH:mm:ss K\""
             returned_value = os.system(cmdexec)
 
@@ -3242,7 +3334,7 @@ def main():
 
             ChSwSubDir = ""
 
-            EvtName = dirname + "\\evt\\sys32\\"
+            EvtName = dirname + EvtDir1
             cmdexec = ".\\chainsaw\\chainsaw_x86_64-pc-windows-msvc.exe hunt --skip-errors --timezone UTC --full --csv --output .\\ChainCSV --mapping .\\chainsaw\\mappings\\sigma-event-logs-all.yml --rule .\\chainsaw\\rules --sigma .\\chainsaw\\sigma " + EvtName
             returned_value = os.system(cmdexec)
 
