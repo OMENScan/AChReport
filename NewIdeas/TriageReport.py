@@ -71,28 +71,6 @@ args = parser.parse_args()
 ###########################################################################
 # Where are the Artifacts, What is the Output File Name
 ###########################################################################
-Collect = "AChoirX"
-MFTFile = "\\RawData\\MFT-C"
-RegSoft = "\\Reg\\SOFTWARE"
-RegSyst = "\\Reg\\SYSTEM"
-RegUser = "\\Reg"
-AmCache = "\\Reg\\AmCache.hve"
-Prefetc = "\\Prf"
-EvtDir1 = "\\evt\\sys32"
-EvtDir2 = "\\evt\\nativ"
-Recycle = "\\RBin"
-Browser = "\\Brw\\BrowseHist.csv"
-IPConns = "\\Sys\\Cports.csv"
-UsrAsst = "\\Sys\\UserAssist.csv"
-Powersh = "\\Psh"
-LNKFile = "\\Lnk"
-AutoRun = "\\Arn\\AutoRun.dat"
-SchTsk1 = "\\Sch"
-SchTsk2 = "\\C\\Windows\\System32\\Tasks"
-DNSIpcf = "\\Sys\\IPCfgDNS.dat"
-DNSCach = "\\Sys\\DNSCache.csv"
-ShelBag = "\\Reg"
-
 cfgname = str(args.cfgname)
 dirname = str(args.dirname)
 dirleft, diright = os.path.split(dirname)
@@ -233,6 +211,30 @@ def main():
 
     SrcMFT = SrcRBin = SrcEvtx = SrcPrf = SrcNTUsr = SrcSysReg = SrcSysTxt = SrcAmCach = 0
     SrcAmCTxt = SrcLnkPrs = SrcPwsLog = 0
+
+    Collect = "AChoirX"
+    MFTFile = "\\RawData\\MFT-C"
+    RegSoft = "\\Reg\\SOFTWARE"
+    RegSyst = "\\Reg\\SYSTEM"
+    RegUser = "\\Reg"
+    AmCache = "\\Reg\\AmCache.hve"
+    Prefetc = "\\Prf"
+    EvtDir1 = "\\evt\\sys32"
+    EvtDir2 = "\\evt\\nativ"
+    Recycle = "\\RBin"
+    Browser = "\\Brw\\BrowseHist.csv"
+    IPConns = "\\Sys\\Cports.csv"
+    UsrAsst = "\\Sys\\UserAssist.csv"
+    Powersh = "\\Psh"
+    LNKFile = "\\Lnk"
+    AutoRun = "\\Arn\\AutoRun.dat"
+    SchTsk1 = "\\Sch"
+    SchTsk2 = "\\C\\Windows\\System32\\Tasks"
+    DNSIpcf = "\\Sys\\IPCfgDNS.dat"
+    DNSCach = "\\Sys\\DNSCache.csv"
+    ShelBag = "\\Reg"
+    PreConv = ""
+    Brander = ""
 
     PreIOC = " <b><font color=red>"
     PostIOC = "</font></b> "
@@ -434,6 +436,14 @@ def main():
                 ShelBag = cfgline[8:].strip()
                 print("[+] Shell Bags Directory: " + ShelBag)
 
+            elif cfgline.startswith("PreConv:"):
+                PreConv = cfgline[8:].strip()
+                print("[+] Pre-Run Conversion Script: " + PreConv)
+
+            elif cfgline.startswith("Brander:"):
+                Brander = cfgline[8:].strip()
+                print("[+] Custom Branding: " + Brander)
+
             elif cfgline.startswith("IOC:"):
                 if HasIOCs == 0:
                     print("[+] Adding IOCs for Searching...")
@@ -533,6 +543,11 @@ def main():
     ###########################################################################
     # Fell Through, Now Process the files and extract data for report
     ###########################################################################
+    if len(PreConv) > 1:
+        print("[+] Now Running Pre-Conversion Script: " + PreConv)
+        cmdexec = PreConv + " " + dirname
+        returned_value = os.system(cmdexec)
+
     print("[+] Now Building Additional Data from Sources...")
     print("[+] Generating System Information from Registry...")
     
@@ -820,6 +835,10 @@ def main():
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
     outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report</H1>\n")
+
+    if len(Brander) > 1:
+        outfile.write(Brander + "\n")
+
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
