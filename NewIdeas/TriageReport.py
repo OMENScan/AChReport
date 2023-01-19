@@ -60,11 +60,11 @@ import shutil
 import datetime
 from zipfile import ZipFile
 
-parser = argparse.ArgumentParser(description="Format AChoir Output into a Report")
+parser = argparse.ArgumentParser(description="Format Triage Collection Output into a Report")
 parser.add_argument("-d", dest="dirname", 
-                  help="AChoir Extraction Directory Name")
+                  help="Triage Collection Directory Name")
 parser.add_argument("-c", dest="cfgname", default="AChReport.cfg", 
-                  help="AChoir Report Configuration File")
+                  help="Triage Report Configuration File")
 args = parser.parse_args()
 
 
@@ -108,16 +108,16 @@ hshnameall = "AllHash.txt"
 def main():
     if dirname != "None":
         if os.path.exists(dirname):
-            print("[+] Valid AChoir Extraction Directory Found.\n")
+            print("[+] Valid Triage Extraction Directory Found.\n")
         else:
-            print("[!] No Valid AChoir Extraction Directory Found.\n")
+            print("[!] No Valid Triage Extraction Directory Found.\n")
             sys.exit(1)
     else:
-        print("[!] No Valid AChoir Extraction Directory Found.\n")
+        print("[!] No Valid Triage Extraction Directory Found.\n")
         sys.exit(1)
 
 
-    print("[+] Root AChoir Dir: " + dirleft)
+    print("[+] Root Triage Dir: " + dirleft)
 
 
     ###########################################################################
@@ -814,12 +814,12 @@ def main():
     outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
 
     outfile.write("</style><script src=\"sortable-Ach.js\"></script>\n")
-    outfile.write("<title>AChoir Endpoint Report(" + diright + ")</title></head>\n")
+    outfile.write("<title>Triage Collection Endpoint Report(" + diright + ")</title></head>\n")
 
 
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
-    outfile.write("<a name=Top></a>\n<H1>AChoir Endpoint Report</H1>\n")
+    outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report</H1>\n")
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
