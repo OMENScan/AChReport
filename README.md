@@ -18,7 +18,7 @@ AChReport can be configured to select which Sections to generate in the report v
 
 Use -c <ConfigFileName> for different report configurations.
 
-IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and other Triage collectios. It REQUIRES AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
+IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and other Triage collection programs. It REQUIRES AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
 
 # Some Things to Know
 
