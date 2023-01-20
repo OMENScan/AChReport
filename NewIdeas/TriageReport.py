@@ -1706,7 +1706,12 @@ def main():
                         else:
                             tdtr = "td"
 
-                        fullURL = csvrow[0]
+                        if Collect.startswith("Velocir"):
+                           fullURL = csvrow[3]
+                        else:
+                           fullURL = csvrow[0]
+
+
                         if fullURL.startswith("file:///") or reccount == 0:
                             if ".rar" in fullURL or ".tgz" in fullURL or ".gz" in fullURL or ".tar" in fullURL or ".cab" in fullURL or ".zip" in fullURL or ".arc" in fullURL or ".7z" in fullURL or ".cab" in fullURL or reccount == 0:
                                 # Is it in our IOC List?
@@ -1722,16 +1727,31 @@ def main():
                                     outfile.write("<thead>\n")
                                     PostIOC += " (+/-)"
 
-                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                                if Collect.startswith("AChoir"):
+                                    outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
-                                if reccount == 0:
-                                    outfile.write("</thead><tbody\n")
+                                    if reccount == 0:
+                                        outfile.write("</thead><tbody\n")
 
-                                reccount = reccount + 1
+                                    reccount = reccount + 1
+
+                                elif Collect.startswith("Velocir"):
+                                    outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                    if reccount == 0:
+                                        outfile.write("</thead><tbody\n")
+
+                                    reccount = reccount + 1
+
+                                else:
+                                    print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
 
             outfile.write("</tbody></table>\n")
 
@@ -1785,7 +1805,11 @@ def main():
                         else:
                             tdtr = "td"
 
-                        fullURL = csvrow[0]
+                        if Collect.startswith("Velocir"):
+                           fullURL = csvrow[3]
+                        else:
+                           fullURL = csvrow[0]
+
                         if fullURL.startswith("file:///") or reccount == 0:
 
                             # Is it in our IOC List?
@@ -1801,11 +1825,31 @@ def main():
                                 outfile.write("<thead>\n")
                                 PostIOC += " (+/-)"
 
-                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                            if Collect.startswith("AChoir"):
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody\n")
+
+                                reccount = reccount + 1
+
+                            elif Collect.startswith("Velocir"):
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody\n")
+
+                                reccount = reccount + 1
+
+                            else:
+                                print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
 
                             if reccount == 0:
                                 outfile.write("</thead><tbody>\n")
@@ -1864,7 +1908,11 @@ def main():
                         else:
                             tdtr = "td"
 
-                        fullURL = csvrow[0]
+                        if Collect.startswith("Velocir"):
+                           fullURL = csvrow[3]
+                        else:
+                           fullURL = csvrow[0]
+
                         if not fullURL.startswith("file:///"):
 
                             # Is it in our IOC List?
@@ -1880,11 +1928,32 @@ def main():
                                 outfile.write("<thead>\n")
                                 PostIOC += " (+/-)"
 
-                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                            if Collect.startswith("AChoir"):
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody\n")
+
+                                reccount = reccount + 1
+
+                            elif Collect.startswith("Velocir"):
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody\n")
+
+                                reccount = reccount + 1
+
+                            else:
+                                print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
+
 
                             if reccount == 0:
                                 outfile.write("</thead><tbody>\n")
@@ -3699,6 +3768,8 @@ def main():
                     outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
                 else:
                     outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+            outfile.write("</div>\n")
 
 
             ###########################################################################
