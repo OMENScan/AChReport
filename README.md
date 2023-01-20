@@ -56,7 +56,6 @@ The AChReport.cfg file has multiple configuration settings that make it extremel
 
      Run:[The Report Section to run]
 
-
      Brander:[Custom Header Text]
      PreConv:[Run a Pre-Conversion Proram against the data]
      Collect:[AChoir, or Velociraptor]
@@ -80,7 +79,6 @@ The AChReport.cfg file has multiple configuration settings that make it extremel
      DNSIpcf:[Subdirectory Location of the DNS Data (ipconfig /displaydns)]
      DNSCach:[Subdirectory Location of the Collected DNS Cache Data]
      ShelBag:[Subdirectory Location of the User Shellbags Registry Hives]
-
 
      IOC:[Simple Text String to Highlight in RED]
 
