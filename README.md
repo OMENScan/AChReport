@@ -1,5 +1,6 @@
-# AChReport
-A Python based Report Writer for AChoir
+# AChReport is now TriageReport
+
+A Python based Report Writer which was created for AChoir, but can now be used with other Triage Collection Data.
 
 I have had a difficult time finding a simple solution that can take the most common Windows artifacts and present them in a simple way, in order to get a quick, general idea of what has happened on a machine.
 
@@ -13,23 +14,24 @@ Since AChoir can already extract these common Windows artifacts (Live Response O
 
 AChReport IS NOT meant as a comprehensive reporting tool.  It's power is in extracting the most important information and presenting it in an easy to understand format.  AChReport IS NOT meant to replace your favorite forensics tool.  It is meant to meet the need for a quick, simple view of a machine.
 
-As of AChReport v0.95 - You can select which Sections to generate in the report via the AChReport.cfg file
+AChReport can be configured to select which Sections to generate in the report via the AChReport.cfg file
 
 Use -c <ConfigFileName> for different report configurations.
 
-IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and requires AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
+IMPORTANT NOTE: AChReport reads the Artifacts extracted by AChoir, and other Triage collectios. It REQUIRES AChoir to be installed to function.  AChReport DOES NOT extract the artifacts, it simply parses, filters and reports on those artifacts.
 
 # Some Things to Know
 
 1. AChReport requires Python to be installed
 2. AChReport requires AChoir to be installed
-3. AChReport requires that an AChoir extraction was performed (Live Response or Dead-Box)
+3. AChReport requires that an AChoir or other Triage extraction was performed (Live Response or Dead-Box)
 4. AChReport requires a few additional components including: MS LogParser in the same directory as AChReport.py, and some RegRipper plugins in a subdirectory called "plugins"
 5. AChReport is meant to run on Windows
-6. AChReport now supports AChoir, and the Windows collections of AChoirX
-7. As of v0.98 AChReport can now download and integrate F-secure Countecept Chainsaw
-8. As of v0.99c AChReport can now download and integrate Eric Zimmerman's LECmd to parse LNK files
-9. As of v0.99f AChReport can highlight IOCs (use the AChReport.cfg file to configure the IOCS ti highlight)
+6. AChReport now supports AChoir, the Windows collections of AChoirX, and Velociraptor
+7. AChReport can now download and integrate F-secure Countercept Chainsaw
+8. AChReport can now download and integrate Eric Zimmerman's LECmd to parse LNK files
+9. AChReport can now download and integrate Eric Zimmerman's SBECmd to parse Shell Bags
+10. AChReport can highlight IOCs (use the AChReport.cfg file to configure the IOCS to highlight)
 
 RegRipper can be found at:
  https://github.com/keydet89/RegRipper2.8
@@ -38,10 +40,13 @@ RegRipper can be found at:
 Microsoft LogParser can be found at:
  https://www.microsoft.com/en-us/download/details.aspx?id=24659
 
-F-Secure Countercept Chainsaw can be found at:
+F-Secure Countercept Chainsaw was originally here:
  https://github.com/countercept/chainsaw
 
-Eric Zimmerman's LECmd can be found at:
+Note: Chainsaw can now be found here:
+ https://github.com/WithSecureLabs/chainsaw
+
+Eric Zimmerman's LECmd, and SBECmd can be found at:
  https://ericzimmerman.github.io/#!index.md
 
 
