@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ####################################################################### 
-# Version: beta v1.0 (Python 3.x)                                     #
+# Version: beta v1.01 (Python 3.x)                                    #
 # Author.: David Porco                                                #
 # Release: 01/17/2021                                                 #
 #                                                                     #
@@ -1706,10 +1706,7 @@ def main():
                         else:
                             tdtr = "td"
 
-                        if Collect.startswith("Velocir"):
-                           fullURL = csvrow[3]
-                        else:
-                           fullURL = csvrow[0]
+                        fullURL = csvrow[0]
 
 
                         if fullURL.startswith("file:///") or reccount == 0:
@@ -1727,31 +1724,16 @@ def main():
                                     outfile.write("<thead>\n")
                                     PostIOC += " (+/-)"
 
-                                if Collect.startswith("AChoir"):
-                                    outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
-                                    if reccount == 0:
-                                        outfile.write("</thead><tbody\n")
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody\n")
 
-                                    reccount = reccount + 1
-
-                                elif Collect.startswith("Velocir"):
-                                    outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                    outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
-
-                                    if reccount == 0:
-                                        outfile.write("</thead><tbody\n")
-
-                                    reccount = reccount + 1
-
-                                else:
-                                    print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
+                                reccount = reccount + 1
 
             outfile.write("</tbody></table>\n")
 
@@ -1805,10 +1787,7 @@ def main():
                         else:
                             tdtr = "td"
 
-                        if Collect.startswith("Velocir"):
-                           fullURL = csvrow[3]
-                        else:
-                           fullURL = csvrow[0]
+                        fullURL = csvrow[0]
 
                         if fullURL.startswith("file:///") or reccount == 0:
 
@@ -1825,31 +1804,16 @@ def main():
                                 outfile.write("<thead>\n")
                                 PostIOC += " (+/-)"
 
-                            if Collect.startswith("AChoir"):
-                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
-                                if reccount == 0:
-                                    outfile.write("</thead><tbody\n")
+                            if reccount == 0:
+                                outfile.write("</thead><tbody\n")
 
-                                reccount = reccount + 1
-
-                            elif Collect.startswith("Velocir"):
-                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
-
-                                if reccount == 0:
-                                    outfile.write("</thead><tbody\n")
-
-                                reccount = reccount + 1
-
-                            else:
-                                print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
+                            reccount = reccount + 1
 
                             if reccount == 0:
                                 outfile.write("</thead><tbody>\n")
@@ -1908,10 +1872,7 @@ def main():
                         else:
                             tdtr = "td"
 
-                        if Collect.startswith("Velocir"):
-                           fullURL = csvrow[3]
-                        else:
-                           fullURL = csvrow[0]
+                        fullURL = csvrow[0]
 
                         if not fullURL.startswith("file:///"):
 
@@ -1928,32 +1889,16 @@ def main():
                                 outfile.write("<thead>\n")
                                 PostIOC += " (+/-)"
 
-                            if Collect.startswith("AChoir"):
-                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
+                            outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[6] + PostIOC + "</" + tdtr + ">\n")
+                            outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + "></tr>\n")
 
-                                if reccount == 0:
-                                    outfile.write("</thead><tbody\n")
+                            if reccount == 0:
+                                outfile.write("</thead><tbody\n")
 
-                                reccount = reccount + 1
-
-                            elif Collect.startswith("Velocir"):
-                                outfile.write("<tr><" + tdtr + " width=15%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=60%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
-                                outfile.write("<" + tdtr + " width=10%>" + PreIOC + csvrow[0] + PostIOC + "</" + tdtr + "></tr>\n")
-
-                                if reccount == 0:
-                                    outfile.write("</thead><tbody\n")
-
-                                reccount = reccount + 1
-
-                            else:
-                                print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
-
+                            reccount = reccount + 1
 
                             if reccount == 0:
                                 outfile.write("</thead><tbody>\n")
@@ -2108,34 +2053,26 @@ def main():
                             PreIOC = " "
                             PostIOC = " "
 
+                        outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
+                        outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
+                        outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
+
+                        ###########################################################################
+                        # Velociraptor Artifact does not have resolved IP - So Ignore this column #
+                        ###########################################################################
                         if Collect.startswith("AChoir"):
-                            outfile.write("<tr bgcolor=E0E0E0><td width=13%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[2] + PostIOC + "</td>\n")
-                            outfile.write("<td width=10%>" + PreIOC + csvrow[5] + PostIOC + "</td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[3] + PostIOC + "</td>\n")
-                            outfile.write("<td width=10%> <A href=https://www.virustotal.com/#/search/" + csvrow[8] + ">" + PreIOC + csvrow[8] + PostIOC + "</a> </td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[6] + PostIOC + "</td>\n")
                             outfile.write("<td width=15%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
-                            outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
-                            outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
-
-                            # Write out IP Address for Bulk Lookup 
-                            ipsfileall.write(csvrow[8] + "\n")
-                        elif Collect.startswith("Velocir"):
-                            outfile.write("<tr bgcolor=E0E0E0><td width=5%>" + PreIOC + csvrow[0] + PostIOC + "</td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[9] + PostIOC + "</td>\n")
-                            outfile.write("<td width=15%>" + PreIOC + csvrow[11] + PostIOC + "</td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[12] + PostIOC + "</td>\n")
-                            outfile.write("<td width=15%> <A href=https://www.virustotal.com/#/search/" + csvrow[13] + ">" + PreIOC + csvrow[13] + PostIOC + "</a> </td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[14] + PostIOC + "</td>\n")
-                            outfile.write("<td width=10%>" + PreIOC + csvrow[13] + PostIOC + "</td>\n")
-                            outfile.write("<td width=5%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
-                            outfile.write("<td width=35%>" + PreIOC + csvrow[4] + PostIOC + "</td></tr>\n")
-
-                            # Write out IP Address for Bulk Lookup 
-                            ipsfileall.write(csvrow[13] + "\n")
                         else:
-                            print("[!] Invalid Collector Type Configured. Must be: AChoirX or Velociraptor...")
+                            outfile.write("<td width=15%> Not Resolved </td>\n")
+
+                        outfile.write("<td width=7%>" + PreIOC + csvrow[10] + PostIOC + "</td>\n")
+                        outfile.write("<td width=30%>" + PreIOC + csvrow[11] + PostIOC + "</td></tr>\n")
+
+                        # Write out IP Address for Bulk Lookup 
+                        ipsfileall.write(csvrow[8] + "\n")
 
 
             outfile.write("</tbody></table>\n")
