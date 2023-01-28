@@ -829,11 +829,12 @@ def main():
     outfile.write(".collapse + label:before {background-color: #4F5150; -webkit-border-radius: 10px; -moz-border-radius: 10px;\n")
     outfile.write(" border-radius: 10px; color: #FFFFFF; content: \"+\"; display: block; float: left; font-weight: bold; height: 20px;\n")
     outfile.write(" line-height: 20px; margin-right: 5px; text-align: center; width: 20px;}\n")
-    outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
+    outfile.write(".collapse:checked + label:before {content: \"\\2212\";} </style>\n")
 
-    outfile.write("</style><script src=\"sortable-Ach.js\"></script>\n")
+    outfile.write("<script src=\"sortable-Ach.js\"></script>\n")
+    outfile.write("<script>function searchIOC (IOCParm) {var name = prompt(\"IOC Search\", IOCParm); if (name != null) {window.find(name, 0, 0, 1); setTimeout(() => {searchIOC(name);}, 100);}} </script>\n")
+
     outfile.write("<title>Triage Collection Endpoint Report(" + diright + ")</title></head>\n")
-
 
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
@@ -4165,7 +4166,7 @@ def main():
         IOCTotal = 0
 
         for IOCIndx, thisIOC in enumerate(IOCList):
-            outfile.write(thisIOC + " (" + str(IOCount[IOCIndx]) + ")<br>\n")
+            outfile.write("<A HREF=\'javascript:searchIOC(\"" + thisIOC + "\")\'> " + thisIOC + "</A> (" + str(IOCount[IOCIndx]) + ")<br>\n")
             reccount = reccount + 1
             IOCTotal += IOCount[IOCIndx]
 
@@ -4179,7 +4180,7 @@ def main():
 
 
     ###########################################################################
-    #Write HTML Trailer Data                                                  #
+    # Write HTML Trailer Data                                                 #
     ###########################################################################
     outfile.write("<hr><h1><Center> * * * End Report * * * </Center></h1>\n")
     outfile.write("</body></html>\n")
