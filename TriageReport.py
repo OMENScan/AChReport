@@ -47,6 +47,7 @@
 #   v0.99h - Make Tables Sortable, Add TZ Information                 #
 #            Convert to latest version of Chainsaw                    #
 #   v1.00 - Merge of AChReport and VelReport into TriageReport        #
+#   v1.10 - Improvements in IOC Reporting                             #
 ####################################################################### 
 import os
 import sys
@@ -447,9 +448,11 @@ def main():
             elif cfgline.startswith("IOC:"):
                 if HasIOCs == 0:
                     print("[+] Adding IOCs for Searching...")
-                    HasIOCs = 1                
+                    HasIOCs = 1
                     IOCList = []
+                    IOCount = []
                 IOCList.append(cfgline[4:].strip().lower())
+                IOCount.append(0)
 
     else:
         print("[!] Config File Not Found (" + cfgname + "), Default Setting Configured.")
@@ -826,11 +829,12 @@ def main():
     outfile.write(".collapse + label:before {background-color: #4F5150; -webkit-border-radius: 10px; -moz-border-radius: 10px;\n")
     outfile.write(" border-radius: 10px; color: #FFFFFF; content: \"+\"; display: block; float: left; font-weight: bold; height: 20px;\n")
     outfile.write(" line-height: 20px; margin-right: 5px; text-align: center; width: 20px;}\n")
-    outfile.write(".collapse:checked + label:before {content: \"\\2212\";}\n")
+    outfile.write(".collapse:checked + label:before {content: \"\\2212\";} </style>\n")
 
-    outfile.write("</style><script src=\"sortable-Ach.js\"></script>\n")
+    outfile.write("<script src=\"sortable-Ach.js\"></script>\n")
+    outfile.write("<script>function searchIOC (IOCParm) {var name = prompt(\"IOC Search\", IOCParm); if (name != null) {window.find(name, 0, 0, 1); setTimeout(() => {searchIOC(name);}, 100);}} </script>\n")
+
     outfile.write("<title>Triage Collection Endpoint Report(" + diright + ")</title></head>\n")
-
 
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
@@ -1110,7 +1114,14 @@ def main():
                                 if (nFileSize > 1000000 and nFileSize < 10000000):
 
                                     RowString = ' '.join(map(str, csvrow))
-                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                    IOCGotHit = 0 
+                                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                                        if AnyIOC in RowString.lower():
+                                            IOCount[IOCIndx] += 1
+                                            IOCGotHit = 1
+
+                                    if IOCGotHit == 1:
                                         PreIOC = " <b><font color=red>"
                                         PostIOC = "</font></b> "
                                     else: 
@@ -1180,7 +1191,14 @@ def main():
                                 if (nFileSize > 10000000 and nFileSize < 100000000):
 
                                     RowString = ' '.join(map(str, csvrow))
-                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                    IOCGotHit = 0 
+                                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                                        if AnyIOC in RowString.lower():
+                                            IOCount[IOCIndx] += 1
+                                            IOCGotHit = 1
+
+                                    if IOCGotHit == 1:
                                         PreIOC = " <b><font color=red>"
                                         PostIOC = "</font></b> "
                                     else: 
@@ -1250,7 +1268,14 @@ def main():
                                 if nFileSize > 100000000:
 
                                     RowString = ' '.join(map(str, csvrow))
-                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                    IOCGotHit = 0 
+                                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                                        if AnyIOC in RowString.lower():
+                                            IOCount[IOCIndx] += 1
+                                            IOCGotHit = 1
+
+                                    if IOCGotHit == 1:
                                         PreIOC = " <b><font color=red>"
                                         PostIOC = "</font></b> "
                                     else: 
@@ -1322,7 +1347,14 @@ def main():
                                 if nFileSize > 100000000:
 
                                     RowString = ' '.join(map(str, csvrow))
-                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                    IOCGotHit = 0 
+                                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                                        if AnyIOC in RowString.lower():
+                                            IOCount[IOCIndx] += 1
+                                            IOCGotHit = 1
+
+                                    if IOCGotHit == 1:
                                         PreIOC = " <b><font color=red>"
                                         PostIOC = "</font></b> "
                                     else: 
@@ -1398,7 +1430,14 @@ def main():
                                     nFileSize = 0
 
                                 RowString = ' '.join(map(str, csvrow))
-                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                IOCGotHit = 0 
+                                for IOCIndx, AnyIOC in enumerate(IOCList):
+                                    if AnyIOC in RowString.lower():
+                                        IOCount[IOCIndx] += 1
+                                        IOCGotHit = 1
+
+                                if IOCGotHit == 1:
                                     PreIOC = " <b><font color=red>"
                                     PostIOC = "</font></b> "
                                 else: 
@@ -1473,7 +1512,14 @@ def main():
                                     nFileSize = 0
 
                                 RowString = ' '.join(map(str, csvrow))
-                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                IOCGotHit = 0 
+                                for IOCIndx, AnyIOC in enumerate(IOCList):
+                                    if AnyIOC in RowString.lower():
+                                        IOCount[IOCIndx] += 1
+                                        IOCGotHit = 1
+
+                                if IOCGotHit == 1:
                                     PreIOC = " <b><font color=red>"
                                     PostIOC = "</font></b> "
                                 else: 
@@ -1545,7 +1591,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -1644,7 +1697,14 @@ def main():
                 for curIdx in range(0, totIdx):
                     # Is it in our IOC List?
                     RowString = dedupCol[curIdx]
-                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                    IOCGotHit = 0 
+                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                        if AnyIOC in RowString.lower():
+                            IOCount[IOCIndx] += 1
+                            IOCGotHit = 1
+
+                    if IOCGotHit == 1:
                         PreIOC = " <b><font color=red>"
                         PostIOC = "</font></b> "
                     else: 
@@ -1713,7 +1773,14 @@ def main():
                             if ".rar" in fullURL or ".tgz" in fullURL or ".gz" in fullURL or ".tar" in fullURL or ".cab" in fullURL or ".zip" in fullURL or ".arc" in fullURL or ".7z" in fullURL or ".cab" in fullURL or reccount == 0:
                                 # Is it in our IOC List?
                                 RowString = ' '.join(map(str, csvrow))
-                                if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                IOCGotHit = 0 
+                                for IOCIndx, AnyIOC in enumerate(IOCList):
+                                    if AnyIOC in RowString.lower():
+                                        IOCount[IOCIndx] += 1
+                                        IOCGotHit = 1
+
+                                if IOCGotHit == 1:
                                     PreIOC = " <b><font color=red>"
                                     PostIOC = "</font></b> "
                                 else: 
@@ -1793,7 +1860,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -1878,7 +1952,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -1969,7 +2050,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2046,7 +2134,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2110,7 +2205,13 @@ def main():
                 if innline.startswith("  TCP ") or innline.startswith("  UDP "):
 
                     # Is it in our IOC List?
-                    if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                    IOCGotHit = 0 
+                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                        if AnyIOC in innline.lower():
+                            IOCount[IOCIndx] += 1
+                            IOCGotHit = 1
+
+                    if IOCGotHit == 1:
                         PreIOC = " <b><font color=red>"
                         PostIOC = "</font></b> "
                     else: 
@@ -2204,7 +2305,13 @@ def main():
                 reccount = reccount + 1
 
                 # Is it in our IOC List?
-                if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                IOCGotHit = 0 
+                for IOCIndx, AnyIOC in enumerate(IOCList):
+                    if AnyIOC in innline.lower():
+                        IOCount[IOCIndx] += 1
+                        IOCGotHit = 1
+
+                if IOCGotHit == 1:
                     PreIOC = " <b><font color=red>"
                     PostIOC = "</font></b> "
                 else: 
@@ -2295,7 +2402,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2349,7 +2463,13 @@ def main():
                 innfile = open(curfile, encoding='utf8', errors="replace")
                 for innline in innfile:
                     # Is it in our IOC List?
-                    if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                    IOCGotHit = 0 
+                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                        if AnyIOC in innline.lower():
+                            IOCount[IOCIndx] += 1
+                            IOCGotHit = 1
+
+                    if IOCGotHit == 1:
                         PreIOC = " <b><font color=red>"
                         PostIOC = "</font></b> "
                     else: 
@@ -2421,7 +2541,13 @@ def main():
                     innfile = open(curfile, encoding='utf8', errors="replace")
                     for innline in innfile:
                         # Is it in our IOC List?
-                        if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in innline.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2520,7 +2646,13 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -2609,7 +2741,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -2679,7 +2818,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2764,7 +2910,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2842,7 +2995,14 @@ def main():
 
                         # Is it in our IOC List?
                         RowString = ' '.join(map(str, csvrow))
-                        if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
                             PreIOC = " <b><font color=red>"
                             PostIOC = "</font></b> "
                         else: 
@@ -2925,7 +3085,14 @@ def main():
 
                     # Is it in our IOC List?
                     RowString = task_URI + task_Command 
-                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                    IOCGotHit = 0 
+                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                        if AnyIOC in RowString.lower():
+                            IOCount[IOCIndx] += 1
+                            IOCGotHit = 1
+
+                    if IOCGotHit == 1:
                         PreIOC = " <b><font color=red>"
                         PostIOC = "</font></b> "
                     else: 
@@ -3019,14 +3186,26 @@ def main():
                     writeRow = 4
 
                 # Is it in our IOC List?
-                if any(AnyIOC in RecType.strip().lower() for AnyIOC in IOCList):
+                IOCGotHit = 0 
+                for IOCIndx, AnyIOC in enumerate(IOCList):
+                    if AnyIOC in RecType.strip().lower():
+                        IOCount[IOCIndx] += 1
+                        IOCGotHit = 1
+
+                if IOCGotHit == 1:
                     PreIOC = " <b><font color=red>"
                     PostIOC = "</font></b> "
                 else: 
                     PreIOC = " "
                     PostIOC = " "
 
-                if any(AnyIOC in RecName.strip().lower() for AnyIOC in IOCList):
+                IOCGotHit = 0 
+                for IOCIndx, AnyIOC in enumerate(IOCList):
+                    if AnyIOC in RecName.strip().lower():
+                        IOCount[IOCIndx] += 1
+                        IOCGotHit = 1
+
+                if IOCGotHit == 1:
                     PreIOC2 = " <b><font color=red>"
                     PostIOC2 = "</font></b> "
                 else: 
@@ -3092,7 +3271,14 @@ def main():
                         else:
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC2 = " <b><font color=red>"
                                 PostIOC2 = "</font></b> "
                             else: 
@@ -3160,7 +3346,13 @@ def main():
             innfile = open(filname, encoding='utf8', errors="replace")
             for innline in innfile:
                 # Is it in our IOC List?
-                if any(AnyIOC in innline.lower() for AnyIOC in IOCList):
+                IOCGotHit = 0 
+                for IOCIndx, AnyIOC in enumerate(IOCList):
+                    if AnyIOC in innline.lower():
+                        IOCount[IOCIndx] += 1
+                        IOCGotHit = 1
+
+                if IOCGotHit == 1:
                     PreIOC = " <b><font color=red>"
                     PostIOC = "</font></b> "
                 else: 
@@ -3278,7 +3470,14 @@ def main():
 
                                     # Is it in our IOC List?
                                     RowString = ' '.join(map(str, csvrow))
-                                    if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                                    IOCGotHit = 0 
+                                    for IOCIndx, AnyIOC in enumerate(IOCList):
+                                        if AnyIOC in RowString.lower():
+                                            IOCount[IOCIndx] += 1
+                                            IOCGotHit = 1
+
+                                    if IOCGotHit == 1:
                                         PreIOC = " <b><font color=red>"
                                         PostIOC = "</font></b> "
                                     else: 
@@ -3395,7 +3594,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3449,7 +3655,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3504,7 +3717,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3558,7 +3778,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3616,7 +3843,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3671,7 +3905,14 @@ def main():
 
                             # Is it in our IOC List?
                             RowString = ' '.join(map(str, csvrow))
-                            if any(AnyIOC in RowString.lower() for AnyIOC in IOCList):
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
                                 PreIOC = " <b><font color=red>"
                                 PostIOC = "</font></b> "
                             else: 
@@ -3922,21 +4163,24 @@ def main():
 
 
         reccount = 0
+        IOCTotal = 0
 
-        for thisIOC in IOCList:
-            outfile.write(thisIOC + "<br>\n")
+        for IOCIndx, thisIOC in enumerate(IOCList):
+            outfile.write("<A HREF=\'javascript:searchIOC(\"" + thisIOC + "\")\'> " + thisIOC + "</A> (" + str(IOCount[IOCIndx]) + ")<br>\n")
             reccount = reccount + 1
+            IOCTotal += IOCount[IOCIndx]
 
         if reccount < 1:
             outfile.write("<p><b><font color = red> No IOC Search Found! </font></b></p>\n")
         else:
             outfile.write("<p>Records Found: " + str(reccount) + "<br>\n")
+            outfile.write("<p>Total IOC Hits: " + str(IOCTotal) + "<br>\n")
 
         outfile.write("</div>\n")
 
 
     ###########################################################################
-    #Write HTML Trailer Data                                                  #
+    # Write HTML Trailer Data                                                 #
     ###########################################################################
     outfile.write("<hr><h1><Center> * * * End Report * * * </Center></h1>\n")
     outfile.write("</body></html>\n")
