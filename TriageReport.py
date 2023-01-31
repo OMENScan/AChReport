@@ -48,6 +48,7 @@
 #            Convert to latest version of Chainsaw                    #
 #   v1.00 - Merge of AChReport and VelReport into TriageReport        #
 #   v1.10 - Improvements in IOC Reporting                             #
+#   v1.20 - Add Windows 11 Program Compatiblity Assistant Artifact    #
 ####################################################################### 
 import os
 import sys
@@ -207,6 +208,7 @@ def main():
     RunSucRDP = RunFaiLgn = RunFBrArc = RunFBrHst = RunIBrHst = RunPrfHst = RunIPCons = 0
     RunUsrAst = RunAutoRn = RunServic = RunScTask = RunDNSInf = RunRcyBin = RunIndIPs = 0
     RunIndHsh = RunIndDom = RunAmCach = RunChnSaw = RunLnkPrs = RunPwsLog = RunShlBag = 0
+    RunPCAsst = 0
 
     HasIOCs = 0
 
@@ -234,6 +236,7 @@ def main():
     DNSIpcf = "\\Sys\\IPCfgDNS.dat"
     DNSCach = "\\Sys\\DNSCache.csv"
     ShelBag = "\\Reg"
+    PCAsist = "\\PCA"
     PreConv = ""
     Brander = ""
 
@@ -353,6 +356,9 @@ def main():
             elif cfgline.startswith("Run:ShellBags"):
                 RunShlBag = 1
 
+            elif cfgline.startswith("Run:PCAssist"):
+                RunPCAsst = 1
+
             elif cfgline.startswith("MFTFile:"):
                 MFTFile = cfgline[8:].strip()
                 print("[+] MFT Source File: " + MFTFile)
@@ -444,6 +450,10 @@ def main():
             elif cfgline.startswith("Brander:"):
                 Brander = cfgline[8:].strip()
                 print("[+] Custom Branding: " + Brander)
+
+            elif cfgline.startswith("PCAsist:"):
+                PCAsist = cfgline[8:].strip()
+                print("[+] Windows 11 Program Compatibility Assist Directory: " + PCAsist)
 
             elif cfgline.startswith("IOC:"):
                 if HasIOCs == 0:
@@ -838,7 +848,7 @@ def main():
 
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
-    outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report</H1>\n")
+    outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report (v1.2)</H1>\n")
 
     if len(Brander) > 1:
         outfile.write(Brander + "\n")
@@ -846,7 +856,8 @@ def main():
     outfile.write("(" + diright + ")<br>\n")
 
     outfile.write("<table border=1 cellpadding=3 width=100%>\n")
-    outfile.write("<tr><td width=5%> <a href=#Top>Top</a> </td>\n")
+
+    outfile.write("<tr><td width=4%> <a href=#Top>Top</a> </td>\n")
 
     if RunAllAll == 1 or RunSmlDel == 1:
         outfile.write("<td width=5%> <a href=#Deleted>Deltd</a> </td>\n")
@@ -861,7 +872,7 @@ def main():
         outfile.write("<td width=5%> <a href=#Logins>FaiLgn</a> </th>\n")
 
     if RunAllAll == 1 or RunSucRDP == 1:
-        outfile.write("<td width=5%> <a href=#RDP>RDP</a> </th>\n")
+        outfile.write("<td width=4%> <a href=#RDP>RDP</a> </th>\n")
 
     if RunAllAll == 1 or RunFBrArc == 1:
         outfile.write("<td width=5%> <a href=#Browser>Brwsr</a> </td>\n")
@@ -897,13 +908,16 @@ def main():
         outfile.write("<td width=5%> <a href=#PShell>Pshl</a> </td>\n")
 
     if RunAllAll == 1 or RunLnkPrs == 1:
-        outfile.write("<td width=5%> <a href=#LNKFiles>LNK</a> </td>\n")
+        outfile.write("<td width=4%> <a href=#LNKFiles>LNK</a> </td>\n")
 
     if RunAllAll == 1 or RunChnSaw == 1:
         outfile.write("<td width=5%> <a href=#ChainSaw>ChSw</a> </td>\n")
 
+    if RunAllAll == 1 or RunPCAsst == 1:
+        outfile.write("<td width=4%> <a href=#PCAsist>PCA</a> </td>\n")
+
     if RunAllAll == 1 or RunIndIPs == 1:
-        outfile.write("<td width=5%> <a href=#BulkIPs>IOC</a> </td></tr>\n")
+        outfile.write("<td width=4%> <a href=#BulkIPs>IOC</a> </td></tr>\n")
 
     outfile.write("</table>\n")
     outfile.write("</Center></p>\n")
@@ -2086,6 +2100,78 @@ def main():
 
     else:
         print("[+] Bypassing Prefetch Information...")
+
+
+
+
+
+    ###########################################################################
+    # Write Program Compatibility Assistant Data (Python CSV Reader Module)   #
+    ###########################################################################
+    if RunAllAll == 1 or RunPCAsst == 1:
+        outfile.write("<a name=PCAsist></a>\n")
+        outfile.write("<input class=\"collapse\" id=\"id33\" type=\"checkbox\" checked>\n")
+        outfile.write("<label for=\"id33\">\n")
+        outfile.write("<H2>Windows 11 Program Compatibility Assistant Information</H2>\n")
+        outfile.write("</label><div><hr>\n")
+
+        outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed information about \n")
+        outfile.write("the Windows 11 Program Compatibility Assistant Artifact (PCA).  This artifact \n") 
+        outfile.write("has been around since at least Windows 8.  However, the artifacts haven’t always \n")
+        outfile.write("been present. As long as the Windows service: PCASVC is running the PCA artifacts \n")
+        outfile.write("Will be present.</font></i></p>\n")
+
+        reccount = 0
+        filname = dirname + PCAsist + "\\PcaAppLaunchDic.txt"
+
+
+        if os.path.isfile(filname):
+            print("[+] Parsing Windows 11 Program Compatibility Assistant Data...")
+            outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+            outfile.write("<thead><tr><th width=20%> Date (+/-)</th>\n")
+            outfile.write("<th width=80%> Process Path (+/-)</th></tr></thead><tbody>\n")
+
+            with open(filname, 'r', encoding='utf8', errors="replace") as csvfile:
+                csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter='|')
+                for csvrow in csvread:
+                    if len(csvrow) > 0:
+                        reccount = reccount + 1
+
+                        # Is it in our IOC List?
+                        RowString = ' '.join(map(str, csvrow))
+
+                        IOCGotHit = 0 
+                        for IOCIndx, AnyIOC in enumerate(IOCList):
+                            if AnyIOC in RowString.lower():
+                                IOCount[IOCIndx] += 1
+                                IOCGotHit = 1
+
+                        if IOCGotHit == 1:
+                            PreIOC = " <b><font color=red>"
+                            PostIOC = "</font></b> "
+                        else: 
+                            PreIOC = " "
+                            PostIOC = " "
+
+                        outfile.write("<tr bgcolor=E0E0E0><td width=20%>" + PreIOC + csvrow[1] + PostIOC + "</td>\n")
+                        outfile.write("<td width=80%>" + PreIOC + csvrow[0] + PostIOC + "</td></tr>\n")
+
+
+            outfile.write("</tbody></table>\n")
+
+            if reccount < 2:
+                outfile.write("<p><b><font color = red> No PCA Data Found! </font></b></p>\n")
+            else:
+                outfile.write("<p>Records Found: " + str(reccount) + "</p>\n")
+
+
+            outfile.write("</div>\n")
+
+        else:
+            print("[!] Bypassing PCA Information (No PCA Input Data) ...")
+            outfile.write("<p><b><font color = red> No PCA Input Data Found! </font></b></p>\n")
+
+
 
 
 
@@ -4158,7 +4244,9 @@ def main():
         outfile.write("<p><i><font color=firebrick>In this section, AChoir is listing the IOCs configured \n")
         outfile.write("in the " + cfgname + "configuration file used for this report. If these IOCs are  \n")
         outfile.write("found in the telemetry or artifacts, they will be higlighted in red in this report. \n")
-        outfile.write("Using IOCs helps to make relevant data easier to find by making it stand out. \n")
+        outfile.write("Using IOCs helps to make relevant data easier to find by making it stand out. Click \n")
+        outfile.write("on an IOC to bring up a search box to search this report for an IOC, or simply use \n")
+        outfile.write("the Web Browser search capability. \n")
         outfile.write("</b></font></i></p>\n")
 
 
