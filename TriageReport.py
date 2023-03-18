@@ -50,6 +50,7 @@
 #   v1.10 - Improvements in IOC Reporting                             #
 #   v1.20 - Add Windows 11 Program Compatiblity Assistant Artifact    #
 #   v1.40 - Add Sec EventID 4648  - Logon Attemp with Explicit Creds  #
+#   v1.41 - Temporary Chainsaw Sanity Check code.                     #
 ####################################################################### 
 import os
 import sys
@@ -4087,6 +4088,16 @@ def main():
                             else: 
                                 PreIOC = " "
                                 PostIOC = " "
+
+                            ###########################################################################
+                            # Sigma Rules - Sanity check detection start                              #
+                            ###########################################################################
+                            if "defender" in csvrow[1].lower() and "defender" not in csvrow[3].lower():
+                                continue
+
+                            ###########################################################################
+                            # Sigma Rules - Sanity check detection end                                #
+                            ###########################################################################
 
                             if reccount == 0:
                                 outfile.write("<thead>\n")
