@@ -54,6 +54,8 @@
 #   v1.42 - Add MFTECmd as optional MFT Parser                        #
 #           TriageReport will use whichever parser is available       #
 #         - Add Scan of the Entire MFT for IOCs                       #
+#   v1.43 - Fix Netstat-abno.dat file name                            #
+#   v1.44 - Fix Scheduled Task XML Parsing                            #
 ####################################################################### 
 import os
 import sys
@@ -232,6 +234,7 @@ def main():
     Recycle = "\\RBin"
     Browser = "\\Brw\\BrowseHist.csv"
     IPConns = "\\Sys\\Cports.csv"
+    IPConn2 = "\\Sys\\Netstat-abno.dat"
     UsrAsst = "\\Sys\\UserAssist.csv"
     Powersh = "\\Psh"
     LNKFile = "\\Lnk"
@@ -411,6 +414,10 @@ def main():
             elif cfgline.startswith("IPConns:"):
                 IPConns = cfgline[8:].strip()
                 print("[+] IP Connection Data: " + IPConns)
+
+            elif cfgline.startswith("IPConn2:"):
+                IPConn2 = cfgline[8:].strip()
+                print("[+] Netstat -abno IP Connection Data: " + IPConn2)
 
             elif cfgline.startswith("UsrAsst:"):
                 UsrAsst = cfgline[8:].strip()
@@ -2507,13 +2514,13 @@ def main():
 
 
         ###########################################################################
-        # This section looks for the netstat-abno.dat file and reformats it.      #
+        # This section looks for the Netstat-abno.dat file and reformats it.      #
         ###########################################################################
         reccount = 0
-        filname = dirname + "\\sys\\netstat-abno.dat"
+        filname = dirname + IPConn2
 
         if os.path.isfile(filname):
-            print("[+] Reading netstat -abno Output File...")
+            print("[+] Reading Netstat -abno Output File...")
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
             outfile.write("<thead><th width=5%> Prot. (+/-)</th>\n")
             outfile.write("<th width=15%> Local IP (+/-)</th>\n")
@@ -2584,8 +2591,8 @@ def main():
             innfile.close()
 
         else:
-            print("[!] Bypassing IP Connections Information (No netstat-abno Input Data) ...")
-            outfile.write("<p><b><font color = red> No netstat-abno Input Data Found! </font></b></p>\n")
+            print("[!] Bypassing IP Connections Information (No Netstat-abno Input Data) ...")
+            outfile.write("<p><b><font color = red> No Netstat-abno Input Data Found! </font></b></p>\n")
 
         outfile.write("</div>\n")
 
