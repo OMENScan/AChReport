@@ -57,6 +57,9 @@
 #   v1.43 - Fix Netstat-abno.dat file name                            #
 #   v1.44 - Fix Scheduled Task XML Parsing                            #
 #   v1.45 - Process Additional Chainsaw Output Files                  #
+#   v1.46 - Add Hayabusa High and Crit detectons                      #
+#   v1.47 - Fix Multithreaded EOFError on Download (Default is YES)   #
+#   v1.48 - Small bug Fixes & Update for Lateset AChoirX Layout       #
 ####################################################################### 
 import os
 import sys
@@ -967,7 +970,7 @@ def main():
 
     outfile.write("<body>\n")
     outfile.write("<p><Center>\n")
-    outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report (v1.45)</H1>\n")
+    outfile.write("<a name=Top></a>\n<H1>Triage Collection Endpoint Report (v1.48)</H1>\n")
 
     if len(Brander) > 1:
         outfile.write(Brander + "\n")
@@ -2935,7 +2938,11 @@ def main():
 
         if os.path.isfile(".\\LECmd.exe") == False:
             print("[?] LECmd executable not found...  Would you like to Download it...")
-            YesOrNo = input("[?] Y/N > ")
+            YesOrNo = "Y"
+            try:
+                YesOrNo = input("[?] Y/N > ")
+            except EOFError:
+                YesOrNo ="Y"
 
             if YesOrNo.upper() == "Y":
                 print("[+] Downloading LECmd from Eric Zimmerman Web Site...")
@@ -3399,8 +3406,9 @@ def main():
 
         if os.path.isdir(curdir):
             outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
-            outfile.write("<thead><tr><th width=40%> URI (+/-)</th>\n")
-            outfile.write("<th width=60%> Command (+/-)</th></tr></thead><tbody>\n")
+            outfile.write("<thead><tr><th width=20%> File (+/-)</th>\n")
+            outfile.write("<th width=40%> URI (+/-)</th>\n")
+            outfile.write("<th width=40%> Command (+/-)</th></tr></thead><tbody>\n")
 
             for root, dirs, files in os.walk(curdir):
                 for fname in files:
@@ -3410,15 +3418,25 @@ def main():
                     task_URI = ""
                     task_Command = ""
 
-                    innfile = open(curfile, encoding='utf16', errors="replace")
+                    # XML Files are actually UTF16 - but if a rogue UTF8 file is present
+                    # this routine will read it.
+                    innfile = open(curfile, encoding='utf8', errors="replace")
                     for innline in innfile:
-                        strip_innline = innline.strip()
+                        # Clean up the string by removing any unicode x00
+                        text_innline = innline.replace('\x00', '')
+                        strip_innline = text_innline.strip()
 
                         if strip_innline.startswith("<URI>"):
                             task_URI = strip_innline[5:]
 
                         elif strip_innline.startswith("<Command>"):
                             task_Command = strip_innline[9:]
+
+                        elif strip_innline.startswith("TaskName:"):
+                            task_URI = strip_innline[9:]
+
+                        elif strip_innline.startswith("Task To Run:"):
+                            task_Command = strip_innline[12:]
 
                     innfile.close()
 
@@ -3438,8 +3456,9 @@ def main():
                         PreIOC = " "
                         PostIOC = " "
 
-                    outfile.write("<tr><td style=\"text-align: left\" width=40%>" + PreIOC + task_URI + PostIOC + "</td>\n")
-                    outfile.write("<td style=\"text-align: left\" width=60%>" + PreIOC + task_Command + PostIOC + "</td></tr>\n")
+                    outfile.write("<tr><td style=\"text-align: left\" width=20%>" + PreIOC + fname + PostIOC + "</td>\n")
+                    outfile.write("<td style=\"text-align: left\" width=40%>" + PreIOC + task_URI + PostIOC + "</td>\n")
+                    outfile.write("<td style=\"text-align: left\" width=40%>" + PreIOC + task_Command + PostIOC + "</td></tr>\n")
 
                     reccount = reccount + 1
 
@@ -3745,7 +3764,12 @@ def main():
 
         if os.path.isfile(".\\SBECmd\\SBECmd.exe") == False:
             print("[?] Shell Bags Explorer - SBECmd executable not found...  Would you like to Download it...")
-            YesOrNo = input("[?] Y/N > ")
+            YesOrNo = "Y"
+
+            try:
+                YesOrNo = input("[?] Y/N > ")
+            except EOFError:
+                YesOrnNo = "Y"
 
             if YesOrNo.upper() == "Y":
                 print("[+] Downloading Eric Zimmerman Shell Bags Explorer...")
@@ -3772,7 +3796,7 @@ def main():
             ShlBSubDir = ""
 
             ShlName = dirname + ShelBag
-            cmdexec = ".\\Sys\\SBECmd.exe -d " + ShlName + " --csv " + dirtrge + "\\ShellBags --nl --dt \"yyyy-MM-dd HH:mm:ss K\""
+            cmdexec = ".\\SBECMD\\SBECmd.exe -d " + ShlName + " --csv " + dirtrge + "\\ShellBags --nl --dt \"yyyy-MM-dd HH:mm:ss K\""
             returned_value = os.system(cmdexec)
 
 
@@ -3874,11 +3898,15 @@ def main():
 
         if os.path.isfile(".\\chainsaw\\chainsaw_x86_64-pc-windows-msvc.exe") == False:
             print("[?] Chainsaw executable not found...  Would you like to Download F-Secure Countercept...")
-            YesOrNo = input("[?] Y/N > ")
+            YesOrNo = "Y"
+            try:
+                YesOrNo = input("[?] Y/N > ")
+            except EOFError:
+                YesOrnNo = "Y"
 
             if YesOrNo.upper() == "Y":
                 print("[+] Downloading F-Secure Countercept Chainsaw From Github...")
-                ChSwUrl = 'https://github.com/WithSecureLabs/chainsaw/releases/download/v2.3.1/chainsaw_all_platforms+rules+examples.zip'
+                ChSwUrl = 'https://github.com/WithSecureLabs/chainsaw/releases/download/v2.9.0/chainsaw_all_platforms+rules+examples.zip'
                 ChSwReq = requests.get(ChSwUrl, allow_redirects=True)
                 open('Chainsaw.zip', 'wb').write(ChSwReq.content)
 
@@ -4642,6 +4670,136 @@ def main():
 
     else:
         print("[!] Bypassing Chainsaw Processing...")
+
+
+
+    ###########################################################################
+    # Run Yamato-Security/hayabusa against all .EVTX Files                    #
+    #                                                                         #
+    # IMPORTANT NOTE: This section is coded for Chainsaw v2.15.0 - Other      #
+    #  versions may require modifications to accomodate, since output can     #
+    #  change between versions.                                               #
+    ###########################################################################
+    if (RunAllAll == 1 or RunChnSaw == 1) and SrcEvtx == 1:
+        print("[+] Checking for Yamato-Security/hayabusa...")
+
+        if os.path.isfile(".\\hayabusa\\hayabusa-2.15.0-win-x64.exe") == False:
+            print("[?] Hayabusa executable not found...  Would you like to Download hayabusa 2.15.0...")
+            YesOrNo = "Y"
+
+            try:
+                YesOrNo = input("[?] Y/N > ")
+            except EOFError:
+                YesOrnNo = "Y"
+
+            if YesOrNo.upper() == "Y":
+                print("[+] Downloading hayabusa 2.15.0 From Github...")
+                ChSwUrl = 'https://github.com/Yamato-Security/hayabusa/releases/download/v2.15.0/hayabusa-2.15.0-win-x64.zip'
+                ChSwReq = requests.get(ChSwUrl, allow_redirects=True)
+                open('Hayabusa.zip', 'wb').write(ChSwReq.content)
+
+                print("[+] Unzipping Hayabusa...")
+                with ZipFile('Hayabusa.zip', 'r') as zipObj:
+                    # Extract all the contents of zip file in current directory
+                    zipObj.extractall(path=".\\hayabusa")
+            else:
+                print("[!] Hayabusa Download Bypassed...")
+
+
+        if os.path.isfile(".\\hayabusa\\hayabusa-2.15.0-win-x64.exe"):
+            print("[+] Hayabusa executable found")
+            print("[+] Running Hayabusa against all Event Logs...")
+
+            ChSwSubDir = ""
+            EvtName = dirname + EvtDir1
+            returned_value = os.system("mkdir " + dirtrge + "\\Hayabusa")
+            cmdexec = ".\\hayabusa\\hayabusa-2.15.0-win-x64.exe csv-timeline -w --UTC -d " + EvtName + " -o " + dirtrge + "\\Hayabusa\\Hayabusa.csv"
+            returned_value = os.system(cmdexec)
+
+            outfile.write("<a name=Hayabusa></a>\n")
+            outfile.write("<input class=\"collapse\" id=\"id36\" type=\"checkbox\" checked>\n")
+            outfile.write("<label for=\"id36\">\n")
+            outfile.write("<H2>Hayabusa Output</H2>\n")
+            outfile.write("</label><div><hr>\n")
+
+            outfile.write("<p><i><font color=firebrick>In this section, AChoir has parsed Yamato-Security/hayabusa\n")
+            outfile.write("Data.  Hayabusa provides a powerful ‘first-response’ capability to quickly\n")
+            outfile.write("identify threats within Windows event logs. It offers a generic and fast method of\n")
+            outfile.write("searching through event logs for keywords, and by identifying threats using built-in\n")
+            outfile.write("detection logic and via support for Sigma detection rules.<font color=gray size=-1><br><br>Source: Parsed Event Logs, TZ is in +hh:mm format</font></font></i></p>\n")
+
+
+            ###########################################################################
+            # Hayabusa: High and Critical Detections                                  #
+            ###########################################################################
+            for ChName in glob.glob(dirtrge + '\\**\\hayabusa.csv', recursive=True):
+                outfile.write("<table class=\"sortable\" border=1 cellpadding=5 width=100%>\n")
+                outfile.write("<p><i><font color=firebrick>High and Critical Detections:</font></i></p>\n")
+
+                reccount = 0
+                with open(ChName, 'r', encoding='utf8', errors="replace") as csvfile:
+                    csvread = csv.reader((line.replace('\0','') for line in csvfile), delimiter=',')
+                    for csvrow in csvread:
+                        if len(csvrow) > 7:
+                            if reccount == 0:
+                                tdtr = "th"
+                            else:
+                                tdtr = "td"
+
+                            # Is it in our IOC List?
+                            RowString = ' '.join(map(str, csvrow))
+
+                            IOCGotHit = 0 
+                            for IOCIndx, AnyIOC in enumerate(IOCList):
+                                if AnyIOC in RowString.lower():
+                                    IOCount[IOCIndx] += 1
+                                    IOCGotHit = 1
+
+                            if IOCGotHit == 1:
+                                PreIOC = " <b><font color=red>"
+                                PostIOC = "</font></b> "
+                            else: 
+                                PreIOC = " "
+                                PostIOC = " "
+
+                            if reccount == 0:
+                                outfile.write("<thead>\n")
+                                PostIOC += " (+/-)"
+
+                            if csvrow[2] == "Level" or csvrow[2] == "high" or csvrow[2] == "crit":
+                                outfile.write("<tr><" + tdtr + " width=20%>" + PreIOC + csvrow[0] + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[1] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[2] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[3] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[4] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=5%>" + PreIOC + csvrow[5] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[7] + PostIOC + "</" + tdtr + ">\n")
+                                outfile.write("<" + tdtr + " width=20%>" + PreIOC + csvrow[8] + PostIOC + "</" + tdtr + "></tr>\n")
+
+                                if reccount == 0:
+                                    outfile.write("</thead><tbody>\n")
+
+                                reccount = reccount + 1
+
+                outfile.write("</tbody></table>\n")
+                os.remove(ChName)
+
+                if ChSwSubDir == "":
+                    Path_File = os.path.split(ChName)
+                    ChSwSubDir = Path_File[0]
+
+                if reccount < 2:
+                    outfile.write("<p><b><font color = red> No Data Found! </font></b></p>\n")
+                else:
+                    outfile.write("<p>Records Found: " + str(reccount) + "</p><hr>\n")
+
+            outfile.write("</div>\n")
+
+        else:
+            print("[!] Hayabusa Executable not found!  Bypassing Hayabusa Processing...")
+
+    else:
+        print("[!] Bypassing Hayabusa Processing...")
 
 
     ###########################################################################
